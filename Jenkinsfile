@@ -152,7 +152,6 @@ void stageAutomaticRelease() {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
         }
 
-        // TODO: Remove this? It is not in k8s-Support-Archive-lib
         stage('Sign after Release') {
             gpg.createSignature()
         }

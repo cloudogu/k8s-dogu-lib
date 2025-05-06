@@ -7,7 +7,7 @@ metadata:
   name: dogurestarts.k8s.cloudogu.com
   labels:
     app: ces
-    app.kubernetes.io/name: k8s-dogu-operator
+    app.kubernetes.io/name: k8s-dogu-operator-crd
 spec:
   group: k8s.cloudogu.com
   names:
