@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [#1] Extracted Dogu-CRD, Dogurestart-CRD and associated clients from [k8s-dogu-operator](https://github.com/cloudogu/k8s-dogu-operator) to this repository
+
 ___
-**CAUTION: The changelog below contains the changes made to the k8s-dogu-operator-crd in the 
+**Attention: The changelog below contains the changes made to the k8s-dogu-operator-crd in the 
 [k8s-dogu-operator](https://github.com/cloudogu/k8s-dogu-operator)-repository.
 Thus, the issue numbers belong to the issues in the k8s-dogu-operater-repository.**
 
@@ -30,7 +33,7 @@ Thus, the issue numbers belong to the issues in the k8s-dogu-operater-repository
   - These will be used to generate a security context for the deployment.
 
 ___
-**CAUTION: The changelog below is the exact same changelog as the one of the [k8s-dogu-operator](https://github.com/cloudogu/k8s-dogu-operator), 
+**Attention: The changelog below is the exact same changelog as the one of the [k8s-dogu-operator](https://github.com/cloudogu/k8s-dogu-operator), 
 since it shared the same version with the k8s-dogu-operator-crd up to this point. So not every change will be relevant to 
 the k8s-dogu-lib.**
 _
