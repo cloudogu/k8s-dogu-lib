@@ -1,5 +1,6 @@
 package client
 
+//nolint:dupl // generifying the rest clients would lead to a lot of unnecessary complexity
 import (
 	"context"
 	"time"
