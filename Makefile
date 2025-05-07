@@ -10,7 +10,11 @@ MAKEFILES_VERSION=9.9.1
 
 ADDITIONAL_CLEAN=dist-clean
 
+CRD_DOGU_SOURCE = ${HELM_CRD_SOURCE_DIR}/templates/k8s.cloudogu.com_dogus.yaml
+CRD_POST_MANIFEST_TARGETS = crd-add-labels crd-copy-for-go-embedding
+
 PRE_COMPILE = generate-deepcopy
+IMAGE_IMPORT_TARGET=image-import
 CHECK_VAR_TARGETS=check-all-vars
 
 include build/make/variables.mk
@@ -23,8 +27,13 @@ include build/make/static-analysis.mk
 include build/make/clean.mk
 include build/make/digital-signature.mk
 include build/make/mocks.mk
-include build/make/k8s.mk
+include build/make/k8s-component.mk
 include build/make/k8s-crd.mk
+
+.PHONY: crd-copy-for-go-embedding
+crd-copy-for-go-embedding:
+	@echo "Copy CRD to api/v2/"
+	@cp ${CRD_DOGU_SOURCE} api/v2/
 
 ##@ Debug
 
