@@ -34,10 +34,3 @@ include build/make/k8s-crd.mk
 crd-copy-for-go-embedding:
 	@echo "Copy CRD to api/v2/"
 	@cp ${CRD_DOGU_SOURCE} api/v2/
-
-##@ Debug
-
-.PHONY: print-debug-info
-print-debug-info: ## Generates info and the list of environment variables required to start the operator in debug mode.
-	@echo "The target generates a list of env variables required to start the operator in debug mode. These can be pasted directly into the 'go build' run configuration in IntelliJ to run and debug the operator on-demand."
-	@echo "STAGE=$(STAGE);LOG_LEVEL=$(LOG_LEVEL);KUBECONFIG=$(KUBECONFIG);NAMESPACE=$(NAMESPACE);DOGU_REGISTRY_ENDPOINT=$(DOGU_REGISTRY_ENDPOINT);DOGU_REGISTRY_USERNAME=$(DOGU_REGISTRY_USERNAME);DOGU_REGISTRY_PASSWORD=$(DOGU_REGISTRY_PASSWORD)"
