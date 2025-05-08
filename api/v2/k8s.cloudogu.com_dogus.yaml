@@ -68,6 +68,36 @@ spec:
                     type: string
                   description: AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
                   type: object
+                data:
+                  description: Data provides the possibility to mount additional data into the dogu.
+                  items:
+                    description: DataMount is description of what data should be mounted to a specific Dogu volume (already defined in dogu.json) .
+                    properties:
+                      name:
+                        description: Name is the name of the data source.
+                        type: string
+                      sourceType:
+                        description: |-
+                          SourceType defines where the data is coming from.
+                          Valid options are:
+                            ConfigMap - data stored in a kubernetes ConfigMap.
+                            Secret - data stored in a kubernetes Secret.
+                        enum:
+                          - ConfigMap
+                          - Secret
+                        type: string
+                      subfolder:
+                        description: Subfolder defines a subfolder in which the data should be put within the volume.
+                        type: string
+                      volume:
+                        description: Volume is the name of the volume to which the data should be mounted. It is defined in the respective dogu.json.
+                        type: string
+                    required:
+                      - name
+                      - sourceType
+                      - volume
+                    type: object
+                  type: array
                 exportMode:
                   description: |-
                     ExportMode indicates whether the dogu should be in "export mode". If true, the operator will spawn an exporter sidecar

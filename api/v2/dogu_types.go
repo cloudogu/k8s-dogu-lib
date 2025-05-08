@@ -70,6 +70,25 @@ type DoguSpec struct {
 	UpgradeConfig UpgradeConfig `json:"upgradeConfig,omitempty"`
 	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
 	AdditionalIngressAnnotations IngressAnnotations `json:"additionalIngressAnnotations,omitempty"`
+	// Data provides the possibility to mount additional data into the dogu.
+	Data []DataMount `json:"data,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
+}
+
+// DataMount is a description of what data should be mounted to a specific Dogu volume (already defined in dogu.json).
+type DataMount struct {
+	// SourceType defines where the data is coming from.
+	// Valid options are:
+	//   ConfigMap - data stored in a kubernetes ConfigMap.
+	//   Secret - data stored in a kubernetes Secret.
+	// +kubebuilder:validation:Enum=ConfigMap;Secret
+	SourceType string `json:"sourceType"`
+	// Name is the name of the data source.
+	Name string `json:"name"`
+	// Volume is the name of the volume to which the data should be mounted. It is defined in the respective dogu.json.
+	Volume string `json:"volume"`
+	// Subfolder defines a subfolder in which the data should be put within the volume.
+	// +optional
+	Subfolder string `json:"subfolder,omitempty"`
 }
 
 // IngressAnnotations are annotations of nginx-ingress rules.
@@ -97,6 +116,10 @@ type DoguResources struct {
 
 type HealthStatus string
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	PendingHealthStatus     HealthStatus = ""
 	AvailableHealthStatus   HealthStatus = "available"
@@ -161,6 +184,10 @@ func (ds *DoguStatus) ResetRequeueTime() {
 	ds.RequeueTime = RequeueTimeInitialRequeueTime
 }
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	DoguStatusNotInstalled       = ""
 	DoguStatusInstalling         = "installing"
