@@ -137,6 +137,10 @@ spec:
                               Localhost - a profile pre-loaded on the node.
                               RuntimeDefault - the container runtime's default profile.
                               Unconfined - no AppArmor enforcement.
+                          enum:
+                            - Unconfined
+                            - RuntimeDefault
+                            - Localhost
                           type: string
                       required:
                         - type
@@ -219,6 +223,10 @@ spec:
                             Localhost - a profile defined in a file on the node should be used.
                             RuntimeDefault - the container runtime default profile should be used.
                             Unconfined - no profile should be applied.
+                          enum:
+                            - Unconfined
+                            - RuntimeDefault
+                            - Localhost
                           type: string
                       required:
                         - type

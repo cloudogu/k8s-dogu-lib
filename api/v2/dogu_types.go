@@ -75,6 +75,17 @@ type DoguSpec struct {
 	Data []DataMount `json:"data,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
 }
 
+// DataSourceType defines the supported source types of additional data mounts.
+// +enum
+type DataSourceType string
+
+const (
+	// DataSourceConfigMap mounts a config map as a data source.
+	DataSourceConfigMap DataSourceType = "ConfigMap"
+	// DataSourceSecret mounts a secret as a data source.
+	DataSourceSecret DataSourceType = "Secret"
+)
+
 // DataMount is a description of what data should be mounted to a specific Dogu volume (already defined in dogu.json).
 type DataMount struct {
 	// SourceType defines where the data is coming from.
