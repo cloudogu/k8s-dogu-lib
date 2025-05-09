@@ -79,6 +79,10 @@ type DoguSpec struct {
 // +enum
 type DataSourceType string
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	// DataSourceConfigMap mounts a config map as a data source.
 	DataSourceConfigMap DataSourceType = "ConfigMap"
