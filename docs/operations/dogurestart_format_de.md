@@ -1,7 +1,7 @@
 # Dogurestart format
 
 Die Dogurestart-CR kann genutzt werden, um Dogus explizit neustarten zu können. Der Dogu-Operator skaliert daraufhin
-dsa entsprechende Dogu-Deployment herunter und anschließend wieder hoch. 
+das entsprechende Dogu-Deployment herunter und anschließend wieder hoch. 
 
 Folgend werden alle Felder einer Dogurestart-CR beschrieben und mit Beispielen veranschaulicht.
 
