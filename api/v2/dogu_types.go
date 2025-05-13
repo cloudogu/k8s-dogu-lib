@@ -214,6 +214,7 @@ const (
 	DoguStatusStarting           = "starting"
 	DoguStatusStopping           = "stopping"
 	DoguStatusChangingExportMode = "changing export-mode"
+	DoguStatusChangingDataMounts = "change data mounts"
 )
 
 // +kubebuilder:object:root=true
