@@ -97,7 +97,7 @@ type DataMount struct {
 	//   ConfigMap - data stored in a kubernetes ConfigMap.
 	//   Secret - data stored in a kubernetes Secret.
 	// +kubebuilder:validation:Enum=ConfigMap;Secret
-	SourceType string `json:"sourceType"`
+	SourceType DataSourceType `json:"sourceType"`
 	// Name is the name of the data source.
 	Name string `json:"name"`
 	// Volume is the name of the volume to which the data should be mounted. It is defined in the respective dogu.json.
