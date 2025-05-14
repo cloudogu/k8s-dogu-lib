@@ -1,4 +1,5 @@
 # Set these to the desired values
+PROJECT_NAME=k8s-dogu-lib
 ARTIFACT_ID=k8s-dogu-operator-crd
 APPEND_CRD_SUFFIX=false
 VERSION=2.6.0
@@ -34,3 +35,12 @@ include build/make/k8s-crd.mk
 crd-copy-for-go-embedding:
 	@echo "Copy CRD to api/v2/"
 	@cp ${CRD_DOGU_SOURCE} api/v2/
+
+# Override make target to use k8s-dogu-lib as label
+.PHONY: crd-add-labels
+crd-add-labels: $(BINARY_YQ)
+	@echo "Adding labels to CRD..."
+	@for file in ${HELM_CRD_SOURCE_DIR}/templates/*.yaml ; do \
+		$(BINARY_YQ) -i e ".metadata.labels.app = \"ces\"" $${file} ;\
+		$(BINARY_YQ) -i e ".metadata.labels.\"app.kubernetes.io/name\" = \"${PROJECT_NAME}\"" $${file} ;\
+	done
