@@ -18,7 +18,7 @@ spec:
   version: 1.20.0-5
   additionalIngressAnnotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-  data:
+  additionalMounts:
     - sourceType: ConfigMap
       name: my-configmap
       volume: importHistory
@@ -78,15 +78,15 @@ additionalIngressAnnotations:
   nginx.ingress.kubernetes.io/proxy-body-size: "0"
 ```
 
-## Data
+## AdditionalMounts
 
 * Optional
 * Datentyp: Array<DataMount>
-* Inhalt: Data bietet die Möglichkeit, zusätzliche Daten in das Dogu einzubinden.
+* Inhalt: AdditionalMounts bietet die Möglichkeit, zusätzliche Daten in das Dogu einzubinden.
 * Beispiel:
 
 ```
-  data:
+  additionalMounts:
     - sourceType: ConfigMap
       name: my-configmap
       volume: importHistory

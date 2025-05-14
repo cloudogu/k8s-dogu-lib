@@ -68,8 +68,8 @@ spec:
                     type: string
                   description: AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
                   type: object
-                data:
-                  description: Data provides the possibility to mount additional data into the dogu.
+                additionalMounts:
+                  description: AdditionalMounts provides the possibility to mount additional data into the dogu.
                   items:
                     description: DataMount is a description of what data should be mounted to a specific Dogu volume (already defined in dogu.json).
                     properties:

@@ -70,9 +70,9 @@ type DoguSpec struct {
 	UpgradeConfig UpgradeConfig `json:"upgradeConfig,omitempty"`
 	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
 	AdditionalIngressAnnotations IngressAnnotations `json:"additionalIngressAnnotations,omitempty"`
-	// Data provides the possibility to mount additional data into the dogu.
+	// AdditionalMounts provides the possibility to mount additional data into the dogu.
 	// +optional
-	Data []DataMount `json:"data,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
+	AdditionalMounts []DataMount `json:"additionalMounts,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
 }
 
 // DataSourceType defines the supported source types of additional data mounts.

@@ -17,7 +17,7 @@ spec:
   version: 1.20.0-5
   additionalIngressAnnotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-  data:
+  additionalMounts:
     - sourceType: ConfigMap
       name: my-configmap
       volume: importHistory
@@ -76,7 +76,7 @@ additionalIngressAnnotations:
   nginx.ingress.kubernetes.io/proxy-body-size: "0"
 ```
 
-## Data
+## AdditionalMounts
 
 * Optional
 * Data type: Array<DataMount>
@@ -84,7 +84,7 @@ additionalIngressAnnotations:
 * Example:
 
 ```
-  data:
+  additionalMounts:
     - sourceType: ConfigMap
       name: my-configmap
       volume: importHistory
