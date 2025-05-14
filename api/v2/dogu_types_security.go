@@ -58,6 +58,7 @@ type SeccompProfile struct {
 	// Localhost - a profile defined in a file on the node should be used.
 	// RuntimeDefault - the container runtime default profile should be used.
 	// Unconfined - no profile should be applied.
+	// +kubebuilder:validation:Enum=Unconfined;RuntimeDefault;Localhost
 	// +unionDiscriminator
 	Type SeccompProfileType `json:"type"`
 	// LocalhostProfile indicates a profile defined in a file on the node should be used.
@@ -72,6 +73,10 @@ type SeccompProfile struct {
 // +enum
 type SeccompProfileType string
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	// SeccompProfileTypeUnconfined indicates no seccomp profile is applied (A.K.A. unconfined).
 	SeccompProfileTypeUnconfined SeccompProfileType = "Unconfined"
@@ -90,6 +95,7 @@ type AppArmorProfile struct {
 	//   Localhost - a profile pre-loaded on the node.
 	//   RuntimeDefault - the container runtime's default profile.
 	//   Unconfined - no AppArmor enforcement.
+	// +kubebuilder:validation:Enum=Unconfined;RuntimeDefault;Localhost
 	// +unionDiscriminator
 	Type AppArmorProfileType `json:"type"`
 
@@ -105,6 +111,10 @@ type AppArmorProfile struct {
 // +enum
 type AppArmorProfileType string
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	// AppArmorProfileTypeUnconfined indicates that no AppArmor profile should be enforced.
 	AppArmorProfileTypeUnconfined AppArmorProfileType = "Unconfined"

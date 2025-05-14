@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- [#3] Add datamount spec to dogu crd. This adds the possibility to mount configmaps & secrets directly to dogu.json-Volumes.
 
 ### Changed
 - [#1] Extracted Dogu-CRD, Dogurestart-CRD and associated clients from [k8s-dogu-operator](https://github.com/cloudogu/k8s-dogu-operator) to this repository
