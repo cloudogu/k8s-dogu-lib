@@ -117,7 +117,7 @@ Ein DataMount kann die folgenden Felder enthalten:
 * Inhalt: Name ist der Name der Datenquelle.
 * Beispiel: `"name": my-configmap`
 
-#### volume
+#### Volume
 
 * Pflichtfeld
 * Datentyp: String
@@ -167,8 +167,8 @@ resources:
 
 * Optional
 * Datentyp: Object
-* Inhalt: Security überschreibt die im dogu-Deskriptor definierten Sicherheitsrichtlinien. Diese Felder können verwendet
-  werden, um die Angriffsfläche einer dogu weiter zu reduzieren.
+* Inhalt: Security überschreibt die im Dogu-Deskriptor definierten Sicherheitsrichtlinien. Diese Felder können verwendet
+  werden, um die Angriffsfläche einer Dogu weiter zu reduzieren.
 
 Security kann die folgenden Attribute enthalten:
 
@@ -211,7 +211,7 @@ appArmorProfile:
 * Inhalt: Capabilities legt die erlaubten und nicht erlaubten Fähigkeiten für das Dogu fest. Das Dogu sollte nicht mehr
   als die hier konfigurierten Capabilities verwenden, da es sonst beim Start oder zur Laufzeit zu Fehlern kommen kann.
   Jede Fähigkeit repräsentiert einen POSIX-„Capabilities“-Typ. Siehe Dokumentationen
-  unter  https://manned.org/capabilities.7
+  unter https://manned.org/capabilities.7
 * Beispiel:
 
 ```
@@ -240,19 +240,19 @@ capabilities:
 * Optional
 * Datentyp: boolean
 * Inhalt: ReadOnlyRootFileSystem mountet das Root-Dateisystem des Containers als schreibgeschützt. Das Dogu muss den
-  Zugriff auf das Root-Dateisystem nur lesend unterstützen, ansonsten kann der dogu-Start fehlschlagen. Dieses Flag ist
+  Zugriff auf das Root-Dateisystem nur lesend unterstützen, ansonsten kann der Dogu-Start fehlschlagen. Dieses Flag ist
   optional und steht standardmäßig auf nil.
-  Ist es gleich nil, wird der im dogu-Deskriptor definierte Wert verwendet.
+  Ist es gleich nil, wird der im Dogu-Deskriptor definierte Wert verwendet.
 * Beispiel: `"readOnlyRootFileSystem": true`
 
 ### RunAsNonRoot
 
 * Optional
 * Datentyp: boolean
-* Inhalt: RunAsNonRoot gibt an, dass der Container als Nicht-Root- User laufen muss. Das Dogu muss die Ausführung als
+* Inhalt: RunAsNonRoot gibt an, dass der Container als Nicht-Root-User laufen muss. Das Dogu muss die Ausführung als
   Nicht-Root-User unterstützen, andernfalls kann der Start vom Dogu fehlschlagen. Dieses Flag ist optional und steht
   standardmäßig auf nil.
-  Ist es gleich nil, wird der im dogu-Deskriptor definierte Wert verwendet.
+  Ist es gleich nil, wird der im Dogu-Deskriptor definierte Wert verwendet.
 * Beispiel: `"runsNonRoot": true`
 
 ### SeLinuxOptions
@@ -360,7 +360,7 @@ upgradeConfig:
 
 * Optional
 * Datentyp: boolean
-* Inhalt: AllowNamespaceSwitch lässt ein Dogu ihren dogu-Namespace während eines Upgrades wechseln. Das Dogu muss
+* Inhalt: AllowNamespaceSwitch lässt ein Dogu seinen Dogu-Namespace während eines Upgrades wechseln. Das Dogu muss
   technisch dasselbe Dogu sein, das sich in einem anderen Namespace befunden hat. Die Version des entfernten Dogus muss
   gleich oder größer als die Version des lokalen Dogus sein.
 

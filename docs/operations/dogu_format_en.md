@@ -1,7 +1,7 @@
 # Dogu format
 
-The Dogu-CR can be used to install Cloudogu-Dogus in a Kubernetes cluster with the Dogu operator.
-Various settings can be made that are evaluated in addition to dogu.json and the Dogu configuration.
+The Dogu-CR can be used to install Cloudogu-Dogus in a Kubernetes cluster with the dogu operator.
+Various settings can be made that are evaluated in addition to dogu.json and the dogu configuration.
 
 All fields of a Dogu-CR are described below and illustrated with examples.
 
@@ -115,7 +115,7 @@ A DataMount can contain the following fields:
 * Content: Name is the name of the data source.
 * Example: `"name": my-configmap`
 
-#### volume
+#### Volume
 
 * Required
 * Data type: String
