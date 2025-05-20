@@ -70,6 +70,41 @@ type DoguSpec struct {
 	UpgradeConfig UpgradeConfig `json:"upgradeConfig,omitempty"`
 	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
 	AdditionalIngressAnnotations IngressAnnotations `json:"additionalIngressAnnotations,omitempty"`
+	// AdditionalMounts provides the possibility to mount additional data into the dogu.
+	// +optional
+	AdditionalMounts []DataMount `json:"additionalMounts,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
+}
+
+// DataSourceType defines the supported source types of additional data mounts.
+// +enum
+type DataSourceType string
+
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
+const (
+	// DataSourceConfigMap mounts a config map as a data source.
+	DataSourceConfigMap DataSourceType = "ConfigMap"
+	// DataSourceSecret mounts a secret as a data source.
+	DataSourceSecret DataSourceType = "Secret"
+)
+
+// DataMount is a description of what data should be mounted to a specific Dogu volume (already defined in dogu.json).
+type DataMount struct {
+	// SourceType defines where the data is coming from.
+	// Valid options are:
+	//   ConfigMap - data stored in a kubernetes ConfigMap.
+	//   Secret - data stored in a kubernetes Secret.
+	// +kubebuilder:validation:Enum=ConfigMap;Secret
+	SourceType DataSourceType `json:"sourceType"`
+	// Name is the name of the data source.
+	Name string `json:"name"`
+	// Volume is the name of the volume to which the data should be mounted. It is defined in the respective dogu.json.
+	Volume string `json:"volume"`
+	// Subfolder defines a subfolder in which the data should be put within the volume.
+	// +optional
+	Subfolder string `json:"subfolder,omitempty"`
 }
 
 // IngressAnnotations are annotations of nginx-ingress rules.
@@ -97,6 +132,10 @@ type DoguResources struct {
 
 type HealthStatus string
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	PendingHealthStatus     HealthStatus = ""
 	AvailableHealthStatus   HealthStatus = "available"
@@ -161,6 +200,10 @@ func (ds *DoguStatus) ResetRequeueTime() {
 	ds.RequeueTime = RequeueTimeInitialRequeueTime
 }
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	DoguStatusNotInstalled       = ""
 	DoguStatusInstalling         = "installing"
@@ -171,6 +214,7 @@ const (
 	DoguStatusStarting           = "starting"
 	DoguStatusStopping           = "stopping"
 	DoguStatusChangingExportMode = "changing export-mode"
+	DoguStatusChangingDataMounts = "change data mounts"
 )
 
 // +kubebuilder:object:root=true

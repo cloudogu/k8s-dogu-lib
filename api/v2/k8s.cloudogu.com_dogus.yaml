@@ -7,7 +7,7 @@ metadata:
   name: dogus.k8s.cloudogu.com
   labels:
     app: ces
-    app.kubernetes.io/name: k8s-dogu-operator-crd
+    app.kubernetes.io/name: k8s-dogu-lib
 spec:
   group: k8s.cloudogu.com
   names:
@@ -68,6 +68,36 @@ spec:
                     type: string
                   description: AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
                   type: object
+                additionalMounts:
+                  description: AdditionalMounts provides the possibility to mount additional data into the dogu.
+                  items:
+                    description: DataMount is a description of what data should be mounted to a specific Dogu volume (already defined in dogu.json).
+                    properties:
+                      name:
+                        description: Name is the name of the data source.
+                        type: string
+                      sourceType:
+                        description: |-
+                          SourceType defines where the data is coming from.
+                          Valid options are:
+                            ConfigMap - data stored in a kubernetes ConfigMap.
+                            Secret - data stored in a kubernetes Secret.
+                        enum:
+                          - ConfigMap
+                          - Secret
+                        type: string
+                      subfolder:
+                        description: Subfolder defines a subfolder in which the data should be put within the volume.
+                        type: string
+                      volume:
+                        description: Volume is the name of the volume to which the data should be mounted. It is defined in the respective dogu.json.
+                        type: string
+                    required:
+                      - name
+                      - sourceType
+                      - volume
+                    type: object
+                  type: array
                 exportMode:
                   description: |-
                     ExportMode indicates whether the dogu should be in "export mode". If true, the operator will spawn an exporter sidecar
@@ -107,6 +137,10 @@ spec:
                               Localhost - a profile pre-loaded on the node.
                               RuntimeDefault - the container runtime's default profile.
                               Unconfined - no AppArmor enforcement.
+                          enum:
+                            - Unconfined
+                            - RuntimeDefault
+                            - Localhost
                           type: string
                       required:
                         - type
@@ -189,6 +223,10 @@ spec:
                             Localhost - a profile defined in a file on the node should be used.
                             RuntimeDefault - the container runtime default profile should be used.
                             Unconfined - no profile should be applied.
+                          enum:
+                            - Unconfined
+                            - RuntimeDefault
+                            - Localhost
                           type: string
                       required:
                         - type
