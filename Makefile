@@ -2,7 +2,7 @@
 PROJECT_NAME=k8s-dogu-lib
 ARTIFACT_ID=k8s-dogu-operator-crd
 APPEND_CRD_SUFFIX=false
-VERSION=2.6.0
+VERSION=2.7.0
 
 IMAGE=cloudogu/${ARTIFACT_ID}:${VERSION}
 GOTAG=1.24.1
@@ -30,6 +30,7 @@ include build/make/digital-signature.mk
 include build/make/mocks.mk
 include build/make/k8s-component.mk
 include build/make/k8s-crd.mk
+include build/make/release.mk
 
 .PHONY: crd-copy-for-go-embedding
 crd-copy-for-go-embedding:
