@@ -152,9 +152,9 @@ void stageAutomaticRelease() {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
         }
 
-        stage('Sign after Release') {
+        /*stage('Sign after Release') {
             gpg.createSignature()
-        }
+        }*/
 
 
         stage('Add Github-Release') {
