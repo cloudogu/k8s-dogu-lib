@@ -123,16 +123,21 @@ type UpgradeConfig struct {
 
 // DoguResources defines the physical resources used by the dogu.
 type DoguResources struct {
-	// DataVolumeSize represents the current size of the volume. Increasing this value leads to an automatic volume
+	// DataVolumeSize represents the desired size of the volume. Increasing this value leads to an automatic volume
 	// expansion. This includes a downtime for the respective dogu. The default size for volumes is "2Gi".
-	// It is not possible to lower the volume size after an expansion. This will introduce an inconsistent state for the
-	// dogu.
-	// Deprecated.
+	// Attempts to lower the size of an existing Dogu will be ignored.
+	// Has the format of a resource.Quantity.
+	//
+	// Deprecated. Now acts the same as MinDataVolumeSize and will soon be replaced by it.
+	// It is recommended to not write this field and read the value by calling Dogu.GetMinDataVolumeSize which will consider MinDataVolumeSize as well.
+	// If both this and MinDataVolumeSize are set, MinDataVolumeSize takes precedent.
 	DataVolumeSize string `json:"dataVolumeSize,omitempty"`
-	// MinDataVolumeSize represents the current size of the volume. Increasing this value leads to an automatic volume
+	// MinDataVolumeSize represents the minimum desired size of the volume. Increasing this value leads to an automatic volume
 	// expansion. This includes a downtime for the respective dogu. The default size for volumes is "2Gi".
-	// It is not possible to lower the volume size after an expansion. This will introduce an inconsistent state for the
-	// dogu.
+	// Attempts to lower the size of an existing Dogu will be ignored.
+	//
+	// The value of MinDataVolumeSize takes precedent over DataVolumeSize.
+	// To consider both values when reading, call Dogu.GetMinDataVolumeSize.
 	MinDataVolumeSize resource.Quantity `json:"minDataVolumeSize,omitempty"`
 }
 
