@@ -3,6 +3,7 @@ package v2
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"testing"
 	"time"
 
@@ -564,5 +565,64 @@ func TestDogu_ValidateSecurity_message(t *testing.T) {
 		// then
 		require.Error(t, actual)
 		assert.ErrorContains(t, actual, "dogu resource official/dogu:1.2.3 contains at least one invalid security field: err is not a valid capability to be added")
+	})
+}
+
+func TestDogu_GetMinDataVolumeSize(t *testing.T) {
+
+	testQuantity := func(minSize *resource.Quantity, size *string, expected int64, errortext *string) {
+		var dogu *Dogu
+		dogu = &Dogu{
+			Spec: DoguSpec{
+				Resources: DoguResources{},
+			},
+		}
+
+		if minSize != nil {
+			dogu.Spec.Resources.MinDataVolumeSize = minSize.DeepCopy()
+		}
+		if size != nil {
+			dogu.Spec.Resources.DataVolumeSize = *size
+		}
+
+		// when
+		actual, err := dogu.GetMinDataVolumeSize()
+
+		// then
+		if errortext == nil {
+			require.NoError(t, err)
+			assert.Equal(t, expected, actual.Value())
+		} else {
+			require.Error(t, err)
+			assert.True(t, actual.IsZero())
+			assert.ErrorContains(t, err, *errortext)
+		}
+	}
+
+	t.Run("min Data volume size should be default", func(t *testing.T) {
+		testQuantity(nil, nil, int64(2147483648), nil)
+	})
+	t.Run("min Data volume size should be 1Gi", func(t *testing.T) {
+		q, err := resource.ParseQuantity("1Gi")
+		require.NoError(t, err)
+		testQuantity(&q, nil, int64(1073741824), nil)
+	})
+	t.Run("min Data volume size should be set to zero so default is returned", func(t *testing.T) {
+		q, err := resource.ParseQuantity("0")
+		require.NoError(t, err)
+		testQuantity(&q, nil, int64(2147483648), nil)
+	})
+	t.Run("Data volume size should be returned as fallback for empty min data volume size", func(t *testing.T) {
+		minsize, err := resource.ParseQuantity("0")
+		require.NoError(t, err)
+		size := "3Gi"
+		testQuantity(&minsize, &size, int64(3221225472), nil)
+	})
+	t.Run("parsing data volume size should fail", func(t *testing.T) {
+		minsize, err := resource.ParseQuantity("0")
+		require.NoError(t, err)
+		size := "invalid"
+		errorText := "quantities must match the regular expression"
+		testQuantity(&minsize, &size, int64(3221225472), &errorText)
 	})
 }
