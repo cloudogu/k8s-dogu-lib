@@ -25,7 +25,7 @@ spec:
       subfolder: "my-configmap-subfolder"
   exportMode: false
   resources:
-    dataVolumeSize: 2Gi
+    minDataVolumeSize: 2Gi
   security:
     appArmorProfile:
       localhostProfile: "localhost-profile"
@@ -145,23 +145,23 @@ Ein DataMount kann die folgenden Felder enthalten:
 
 * Optional
 * Datentyp: Object
-* Inhalt: Ressourcen des Dogus (e.g. dataVolumeSize)
+* Inhalt: Ressourcen des Dogus (e.g. minDataVolumeSize)
 * Beispiel:
 
 ```
 resources:
-  dataVolumeSize: 2Gi
+  minDataVolumeSize: 2Gi
 ```
 
-### DataVolumeSize
+### MinDataVolumeSize
 
 * Optional
 * Datentyp: String
-* Inhalt: DataVolumeSize stellt die aktuelle Größe des Volumes dar. Das Erhöhen dieses Wertes führt zu einer
+* Inhalt: MinDataVolumeSize stellt die gewünschte Mindestgröße des Volumes dar. Das Erhöhen dieses Wertes führt ggf. zu einer
   automatischen Erweiterung. Dies beinhaltet eine Ausfallzeit für die jeweilige Dogu. Die Standardgröße für Volumes ist
   „2Gi“. Es ist nicht möglich, die Größe des Volumes nach einer Erweiterung zu verringern. Dies würde zu einem
   inkonsistenten Zustand des Dogus führen.
-* Beispiel: `"dataVolumeSize": 2Gi`
+* Beispiel: `"minDataVolumeSize": 2Gi`
 
 ## Security
 
