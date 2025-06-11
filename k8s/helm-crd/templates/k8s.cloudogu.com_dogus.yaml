@@ -303,6 +303,30 @@ spec:
                 stopped:
                   description: Stopped shows if the dogu has been stopped or not.
                   type: boolean
+                dataVolumeSize:
+                  type: integer
+                  description: dataVolumeSize represents the current size of the volume.
+                conditions:
+                  type: array
+                  description: a list of conditions for checking prerequisits and status changes
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                      - lastTransitionTime
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
               required:
                 - requeuePhase
                 - requeueTime
