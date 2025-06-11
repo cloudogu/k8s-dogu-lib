@@ -304,8 +304,12 @@ spec:
                   description: Stopped shows if the dogu has been stopped or not.
                   type: boolean
                 dataVolumeSize:
-                  type: integer
+                  anyOf:
+                    - type: integer
+                    - type: string
                   description: dataVolumeSize represents the current size of the volume.
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
                 conditions:
                   type: array
                   description: a list of conditions for checking prerequisits and status changes
