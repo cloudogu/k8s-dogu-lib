@@ -171,7 +171,7 @@ type DoguStatus struct {
 	// ExportMode shows if the export mode of the dogu is currently active.
 	ExportMode bool `json:"exportMode,omitempty"`
 	// DataVolumeSize shows the current size of the mounted data volume
-	DataVolumeSize resource.Quantity `json:"dataVolumeSize,omitempty"`
+	DataVolumeSize *resource.Quantity `json:"dataVolumeSize,omitempty"`
 	// a list of conditions TRUE|FALSE
 	// e.g. MeetsMinimumDataVolumeSize -> True if status.dataVolumeSize >= spec.minDataVolumeSize
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
