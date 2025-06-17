@@ -221,17 +221,17 @@ func (ds *DoguStatus) ResetRequeueTime() {
 //
 //goland:noinspection GoUnusedConst
 const (
-	DoguStatusNotInstalled                        = ""
-	DoguStatusInstalling                          = "installing"
-	DoguStatusUpgrading                           = "upgrading"
-	DoguStatusDeleting                            = "deleting"
-	DoguStatusInstalled                           = "installed"
-	DoguStatusPVCResizing                         = "resizing PVC"
-	DoguStatusStarting                            = "starting"
-	DoguStatusStopping                            = "stopping"
-	DoguStatusChangingExportMode                  = "changing export-mode"
-	DoguStatusChangingDataMounts                  = "change data mounts"
-	DoguStatusConditionMeetsMinimumDataVolumeSize = "MeetsMinimumDataVolumeSize"
+	DoguStatusNotInstalled       = ""
+	DoguStatusInstalling         = "installing"
+	DoguStatusUpgrading          = "upgrading"
+	DoguStatusDeleting           = "deleting"
+	DoguStatusInstalled          = "installed"
+	DoguStatusPVCResizing        = "resizing PVC"
+	DoguStatusStarting           = "starting"
+	DoguStatusStopping           = "stopping"
+	DoguStatusChangingExportMode = "changing export-mode"
+	DoguStatusChangingDataMounts = "change data mounts"
+	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
 )
 
 // +kubebuilder:object:root=true
