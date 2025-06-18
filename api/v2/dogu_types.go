@@ -170,6 +170,11 @@ type DoguStatus struct {
 	Stopped bool `json:"stopped,omitempty"`
 	// ExportMode shows if the export mode of the dogu is currently active.
 	ExportMode bool `json:"exportMode,omitempty"`
+	// DataVolumeSize shows the current size of the mounted data volume
+	DataVolumeSize *resource.Quantity `json:"dataVolumeSize,omitempty"`
+	// a list of conditions TRUE|FALSE
+	// e.g. MeetsMinimumDataVolumeSize -> True if status.dataVolumeSize >= spec.minDataVolumeSize
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 func (d *Dogu) NextRequeueWithRetry(ctx context.Context, client client.Client) (time.Duration, error) {
@@ -226,6 +231,7 @@ const (
 	DoguStatusStopping           = "stopping"
 	DoguStatusChangingExportMode = "changing export-mode"
 	DoguStatusChangingDataMounts = "change data mounts"
+	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
 )
 
 // +kubebuilder:object:root=true

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.9.0] - 2025-06-18
+### Added
+- [#7] Add new status field for current data volume size including a special status condition
+
 ## [v2.8.0] - 2025-05-22
 ### Added
 - [#5] Add new field for minimal data volume size
