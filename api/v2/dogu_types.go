@@ -231,6 +231,8 @@ const (
 	DoguStatusStopping           = "stopping"
 	DoguStatusChangingExportMode = "changing export-mode"
 	DoguStatusChangingDataMounts = "change data mounts"
+	ConditionReady               = "ready"
+	ConditionHealthy             = "healthy"
 	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
 )
 
