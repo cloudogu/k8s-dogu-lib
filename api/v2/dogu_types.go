@@ -233,6 +233,7 @@ const (
 	DoguStatusChangingDataMounts = "change data mounts"
 	ConditionReady               = "ready"
 	ConditionHealthy             = "healthy"
+	ConditionSupportMode         = "supportMode"
 	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
 )
 
