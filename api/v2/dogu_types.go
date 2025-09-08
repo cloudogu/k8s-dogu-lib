@@ -10,8 +10,6 @@ import (
 
 	cescommons "github.com/cloudogu/ces-commons-lib/dogu"
 	"github.com/cloudogu/cesapp-lib/core"
-	"github.com/cloudogu/retry-lib/retry"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -159,8 +157,10 @@ type DoguStatus struct {
 	// Status represents the state of the Dogu in the ecosystem
 	Status string `json:"status"`
 	// RequeueTime contains time necessary to perform the next requeue
+	// Deprecated, should be removed at next major update
 	RequeueTime time.Duration `json:"requeueTime"`
 	// RequeuePhase is the actual phase of the dogu resource used for a currently running async process.
+	// Deprecated, should be removed at next major update
 	RequeuePhase string `json:"requeuePhase"`
 	// Health describes the health status of the dogu
 	Health HealthStatus `json:"health,omitempty"`
@@ -175,45 +175,6 @@ type DoguStatus struct {
 	// a list of conditions TRUE|FALSE
 	// e.g. MeetsMinimumDataVolumeSize -> True if status.dataVolumeSize >= spec.minDataVolumeSize
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
-}
-
-func (d *Dogu) NextRequeueWithRetry(ctx context.Context, client client.Client) (time.Duration, error) {
-	var requeueTime time.Duration
-	err := retry.OnConflict(func() error {
-		fetchErr := d.refreshDoguValue(ctx, client)
-		if fetchErr != nil {
-			return fetchErr
-		}
-		requeueTime = d.Status.NextRequeue()
-
-		return d.Update(ctx, client)
-	})
-
-	if err != nil {
-		return 0, err
-	}
-
-	return requeueTime, err
-}
-
-// NextRequeue increases the requeue time of the dogu status and returns the new requeue time
-func (ds *DoguStatus) NextRequeue() time.Duration {
-	if ds.RequeueTime == 0 {
-		ds.ResetRequeueTime()
-	}
-
-	newRequeueTime := ds.RequeueTime * RequeueTimeMultiplerForEachRequeue
-	if newRequeueTime >= RequeueTimeMaxRequeueTime {
-		ds.RequeueTime = RequeueTimeMaxRequeueTime
-	} else {
-		ds.RequeueTime = newRequeueTime
-	}
-	return ds.RequeueTime
-}
-
-// ResetRequeueTime resets the requeue timer to the initial value
-func (ds *DoguStatus) ResetRequeueTime() {
-	ds.RequeueTime = RequeueTimeInitialRequeueTime
 }
 
 // These constants are exported for use in other packages
@@ -325,55 +286,6 @@ func (d *Dogu) Update(ctx context.Context, client client.Client) error {
 	}
 
 	return nil
-}
-
-// changeRequeuePhase changes the requeue phase of this dogu resource and applies it to the cluster state.
-func (d *Dogu) changeRequeuePhase(ctx context.Context, client client.Client, phase string) error {
-	d.Status.RequeuePhase = phase
-	return d.Update(ctx, client)
-}
-
-// ChangeRequeuePhaseWithRetry refreshes the dogu resource and tries to set the requeue phase.
-// If a conflict error occurs this method will retry the operation.
-func (d *Dogu) ChangeRequeuePhaseWithRetry(ctx context.Context, client client.Client, phase string) error {
-	return retry.OnConflict(func() error {
-		err := d.refreshDoguValue(ctx, client)
-		if err != nil {
-			return err
-		}
-
-		return d.changeRequeuePhase(ctx, client, phase)
-	})
-}
-
-func (d *Dogu) refreshDoguValue(ctx context.Context, client client.Client) error {
-	dogu := &Dogu{}
-	err := client.Get(ctx, d.GetObjectKey(), dogu)
-	if err != nil {
-		return err
-	}
-	*d = *dogu
-
-	return nil
-}
-
-// changeState changes the state of this dogu resource and applies it to the cluster state.
-func (d *Dogu) changeState(ctx context.Context, client client.Client, newStatus string) error {
-	d.Status.Status = newStatus
-	return d.Update(ctx, client)
-}
-
-// ChangeStateWithRetry refreshes the dogu resource and tries to set the state.
-// If a conflict error occurs this method will retry the operation.
-func (d *Dogu) ChangeStateWithRetry(ctx context.Context, client client.Client, newStatus string) error {
-	return retry.OnConflict(func() error {
-		err := d.refreshDoguValue(ctx, client)
-		if err != nil {
-			return err
-		}
-
-		return d.changeState(ctx, client, newStatus)
-	})
 }
 
 // GetPodLabels returns labels that select a pod being associated with this dogu.
