@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -27,13 +28,11 @@ import (
 //go:embed k8s.cloudogu.com_dogus.yaml
 var _ embed.FS
 
+// interface constraints
+var _ conditions.Getter = &Dogu{}
+var _ conditions.Setter = &Dogu{}
+
 const (
-	// RequeueTimeMultiplerForEachRequeue defines the factor to multiple the requeue time of a failed dogu crd operation
-	RequeueTimeMultiplerForEachRequeue = 2
-	// RequeueTimeInitialRequeueTime defines the initial value of the requeue time
-	RequeueTimeInitialRequeueTime = time.Second * 5
-	// RequeueTimeMaxRequeueTime defines the maximum amount of time to wait for a requeue of a dogu resource
-	RequeueTimeMaxRequeueTime = time.Hour * 6
 	// DefaultVolumeSize is the default size of a new dogu volume if no volume size is specified in the dogu resource.
 	DefaultVolumeSize = "2Gi"
 )
@@ -215,6 +214,14 @@ type Dogu struct {
 
 	Spec   DoguSpec   `json:"spec,omitempty"`
 	Status DoguStatus `json:"status,omitempty"`
+}
+
+func (d *Dogu) GetConditions() []metav1.Condition {
+	return d.Status.Conditions
+}
+
+func (d *Dogu) SetConditions(c []metav1.Condition) {
+	d.Status.Conditions = c
 }
 
 // GetSimpleDoguName returns the name of the dogu as a dogu.SimpleName.

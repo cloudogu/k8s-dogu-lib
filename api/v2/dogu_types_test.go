@@ -3,12 +3,11 @@ package v2
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/cloudogu/cesapp-lib/core"
 	appsv1 "k8s.io/api/apps/v1"
@@ -38,53 +37,6 @@ var testDogu = &Dogu{
 	Status: DoguStatus{Status: ""},
 }
 var testCtx = context.Background()
-
-func TestDoguStatus_GetRequeueTime(t *testing.T) {
-	tests := []struct {
-		requeueCount        time.Duration
-		expectedRequeueTime time.Duration
-	}{
-		{requeueCount: time.Second, expectedRequeueTime: time.Second * 2},
-		{requeueCount: time.Second * 17, expectedRequeueTime: time.Second * 34},
-		{requeueCount: time.Minute, expectedRequeueTime: time.Minute * 2},
-		{requeueCount: time.Minute * 7, expectedRequeueTime: time.Minute * 14},
-		{requeueCount: time.Minute * 45, expectedRequeueTime: time.Hour*1 + time.Minute*30},
-		{requeueCount: time.Hour * 2, expectedRequeueTime: time.Hour * 4},
-		{requeueCount: time.Hour * 3, expectedRequeueTime: time.Hour * 6},
-		{requeueCount: time.Hour * 5, expectedRequeueTime: time.Hour * 6},
-		{requeueCount: time.Hour * 100, expectedRequeueTime: time.Hour * 6},
-	}
-
-	for _, tt := range tests {
-		t.Run(fmt.Sprintf("calculate next requeue time for current time %s", tt.requeueCount), func(t *testing.T) {
-			// given
-			ds := &DoguStatus{
-				RequeueTime: tt.requeueCount,
-			}
-
-			// when
-			actualRequeueTime := ds.NextRequeue()
-
-			// then
-			assert.Equal(t, tt.expectedRequeueTime, actualRequeueTime)
-		})
-	}
-}
-
-func TestDoguStatus_ResetRequeueTime(t *testing.T) {
-	t.Run("reset requeue time", func(t *testing.T) {
-		// given
-		ds := &DoguStatus{
-			RequeueTime: time.Hour * 3,
-		}
-
-		// when
-		ds.ResetRequeueTime()
-
-		// then
-		assert.Equal(t, RequeueTimeInitialRequeueTime, ds.RequeueTime)
-	})
-}
 
 func TestDogu_GetSecretObjectKey(t *testing.T) {
 	// given
@@ -321,7 +273,6 @@ func TestDogu_GetPrivateKeySecret(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// given
 		expected := &corev1.Secret{
-			TypeMeta:   metav1.TypeMeta{Kind: "Secret", APIVersion: "v1"},
 			ObjectMeta: metav1.ObjectMeta{Name: "dogu-private", Namespace: "ecosystem"},
 		}
 		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).WithObjects(expected).Build()
@@ -344,176 +295,6 @@ func TestDogu_GetPrivateKeySecret(t *testing.T) {
 		// then
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "failed to get private key secret for dogu")
-	})
-}
-
-func TestDogu_ChangeRequeuePhaseWithRetry(t *testing.T) {
-	t.Run("success on conflict", func(t *testing.T) {
-		// given
-		resourceVersion := "1"
-		sut := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: resourceVersion,
-			},
-		}
-
-		newDogu := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: "2",
-			},
-			Status: DoguStatus{
-				RequeuePhase: "old",
-			},
-		}
-
-		requeuePhase := "phase"
-		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).WithStatusSubresource(&Dogu{}).WithObjects(newDogu).Build()
-
-		// when
-		err := sut.ChangeRequeuePhaseWithRetry(testCtx, fakeClient, requeuePhase)
-
-		// then
-		require.NoError(t, err)
-		assert.Equal(t, requeuePhase, sut.Status.RequeuePhase)
-		assert.NotEqual(t, resourceVersion, sut.ResourceVersion)
-	})
-
-	t.Run("should return error on get error", func(t *testing.T) {
-		// given
-		resourceVersion := "1"
-		sut := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: resourceVersion,
-			},
-		}
-
-		requeuePhase := "phase"
-		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).Build()
-
-		// when
-		err := sut.ChangeRequeuePhaseWithRetry(testCtx, fakeClient, requeuePhase)
-
-		// then
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "dogus.k8s.cloudogu.com \"postgresql\" not found")
-	})
-}
-
-func TestDogu_ChangeStateWithRetry(t *testing.T) {
-	t.Run("success on conflict", func(t *testing.T) {
-		// given
-		resourceVersion := "1"
-		sut := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: resourceVersion,
-			},
-		}
-
-		newDogu := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: "2",
-			},
-			Status: DoguStatus{
-				Status: "old",
-			},
-		}
-
-		status := "status"
-		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).WithStatusSubresource(&Dogu{}).WithObjects(newDogu).Build()
-
-		// when
-		err := sut.ChangeStateWithRetry(testCtx, fakeClient, status)
-
-		// then
-		require.NoError(t, err)
-		assert.Equal(t, status, sut.Status.Status)
-		assert.NotEqual(t, resourceVersion, sut.ResourceVersion)
-	})
-
-	t.Run("should return error on get error", func(t *testing.T) {
-		// given
-		resourceVersion := "1"
-		sut := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: resourceVersion,
-			},
-		}
-
-		status := "status"
-		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).Build()
-
-		// when
-		err := sut.ChangeStateWithRetry(testCtx, fakeClient, status)
-
-		// then
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "dogus.k8s.cloudogu.com \"postgresql\" not found")
-	})
-}
-
-func TestDogu_NextRequeueWithRetry(t *testing.T) {
-	t.Run("success on conflict; requeue time was reset", func(t *testing.T) {
-		// given
-		sut := Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: "1",
-			},
-			Status: DoguStatus{
-				RequeueTime: time.Second * 40,
-			},
-		}
-
-		newDogu := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:            "postgresql",
-				Namespace:       "ecosystem",
-				ResourceVersion: "2",
-			},
-			Status: DoguStatus{
-				RequeueTime: 0,
-			},
-		}
-		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).WithObjects(newDogu).WithStatusSubresource(&Dogu{}).Build()
-
-		// when
-		retry, err := sut.NextRequeueWithRetry(testCtx, fakeClient)
-
-		// then
-		require.NoError(t, err)
-		assert.Equal(t, time.Second*10, retry)
-	})
-
-	t.Run("should return error on get error", func(t *testing.T) {
-		// given
-		sut := &Dogu{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "postgresql",
-				Namespace: "ecosystem",
-			},
-		}
-
-		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).Build()
-
-		// when
-		_, err := sut.NextRequeueWithRetry(testCtx, fakeClient)
-
-		// then
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "dogus.k8s.cloudogu.com \"postgresql\" not found")
 	})
 }
 
