@@ -161,6 +161,8 @@ type DoguStatus struct {
 	// RequeuePhase is the actual phase of the dogu resource used for a currently running async process.
 	// Deprecated, should be removed at next major update
 	RequeuePhase string `json:"requeuePhase"`
+	// StartedAt contain the time of the last restart of the dogu.
+	StartedAt time.Time `json:"startedAt,omitempty"`
 	// Health describes the health status of the dogu
 	Health HealthStatus `json:"health,omitempty"`
 	// InstalledVersion of the dogu (e.g. 2.4.48-3)
