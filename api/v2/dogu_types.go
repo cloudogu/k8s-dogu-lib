@@ -200,6 +200,7 @@ const (
 	ConditionHealthy             = "healthy"
 	ConditionSupportMode         = "supportMode"
 	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
+	ConditionPauseReconcilation  = "pauseReconcilation"
 )
 
 // +kubebuilder:object:root=true
