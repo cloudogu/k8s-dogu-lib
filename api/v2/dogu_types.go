@@ -63,9 +63,9 @@ type DoguSpec struct {
 	ExportMode bool `json:"exportMode,omitempty"`
 	// Stopped indicates whether the dogu should be running (stopped=false) or not (stopped=true).
 	Stopped bool `json:"stopped,omitempty"`
-	// PauseReconcilation indicates whether the reconcilation loop should be running (pauseReconcilation=false) or not (pauseReconcilation=true).
+	// PauseReconciliation indicates whether the reconciliation loop should be running (pauseReconciliation=false) or not (pauseReconciliation=true).
 	// The validation step should always be running.
-	PauseReconcilation bool `json:"pauseReconcilation,omitempty"`
+	PauseReconciliation bool `json:"pauseReconciliation,omitempty"`
 	// UpgradeConfig contains options to manipulate the upgrade process.
 	UpgradeConfig UpgradeConfig `json:"upgradeConfig,omitempty"`
 	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
@@ -200,7 +200,7 @@ const (
 	ConditionHealthy             = "healthy"
 	ConditionSupportMode         = "supportMode"
 	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
-	ConditionPauseReconcilation  = "pauseReconcilation"
+	ConditionPauseReconciliation = "pauseReconciliation"
 )
 
 // +kubebuilder:object:root=true
