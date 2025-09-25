@@ -178,6 +178,10 @@ type DoguStatus struct {
 	DataVolumeSize *resource.Quantity `json:"dataVolumeSize,omitempty"`
 	// a list of conditions TRUE|FALSE
 	// e.g. MeetsMinimumDataVolumeSize -> True if status.dataVolumeSize >= spec.minDataVolumeSize
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
