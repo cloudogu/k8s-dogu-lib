@@ -38,6 +38,14 @@ spec:
           jsonPath: .metadata.creationTimestamp
           name: Age
           type: date
+        - description: Whether the resource is healthy in the current state
+          jsonPath: .status.conditions[?(@.type=='healthy')].status
+          name: Healthy
+          type: string
+        - description: Whether the resource is ready in the current state
+          jsonPath: .status.conditions[?(@.type=='ready')].status
+          name: Ready
+          type: string
       name: v2
       schema:
         openAPIV3Schema:
@@ -106,6 +114,11 @@ spec:
                 name:
                   description: Name of the dogu (e.g. official/ldap)
                   type: string
+                pauseReconciliation:
+                  description: |-
+                    PauseReconciliation indicates whether the reconciliation loop should be running (pauseReconciliation=false) or not (pauseReconciliation=true).
+                    The validation step should always be running.
+                  type: boolean
                 resources:
                   description: Resources of the dogu (e.g. dataVolumeSize)
                   properties:
@@ -281,6 +294,79 @@ spec:
             status:
               description: DoguStatus defines the observed state of a Dogu.
               properties:
+                conditions:
+                  description: |-
+                    a list of conditions TRUE|FALSE
+                    e.g. MeetsMinimumDataVolumeSize -> True if status.dataVolumeSize >= spec.minDataVolumeSize
+                  items:
+                    description: "Condition contains details for one aspect of the current state of this API Resource.\n---\nThis struct is intended for direct use as an array at the field path .status.conditions.  For example,\n\n\n\ttype FooStatus struct{\n\t    // Represents the observations of a foo's current state.\n\t    // Known .status.conditions.type are: \"Available\", \"Progressing\", and \"Degraded\"\n\t    // +patchMergeKey=type\n\t    // +patchStrategy=merge\n\t    // +listType=map\n\t    // +listMapKey=type\n\t    Conditions []metav1.Condition `json:\"conditions,omitempty\" patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`\n\n\n\t    // other fields\n\t}"
+                    properties:
+                      lastTransitionTime:
+                        description: |-
+                          lastTransitionTime is the last time the condition transitioned from one status to another.
+                          This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                        format: date-time
+                        type: string
+                      message:
+                        description: |-
+                          message is a human readable message indicating details about the transition.
+                          This may be an empty string.
+                        maxLength: 32768
+                        type: string
+                      observedGeneration:
+                        description: |-
+                          observedGeneration represents the .metadata.generation that the condition was set based upon.
+                          For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                          with respect to the current state of the instance.
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: |-
+                          reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                          Producers of specific condition types may define expected values and meanings for this field,
+                          and whether the values are considered a guaranteed API.
+                          The value should be a CamelCase string.
+                          This field may not be empty.
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                        type: string
+                      status:
+                        description: status of the condition, one of True, False, Unknown.
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        description: |-
+                          type of condition in CamelCase or in foo.example.com/CamelCase.
+                          ---
+                          Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
+                          useful (see .node.status.conditions), the ability to deconflict is important.
+                          The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                        type: string
+                    required:
+                      - lastTransitionTime
+                      - message
+                      - reason
+                      - status
+                      - type
+                    type: object
+                  type: array
+                  x-kubernetes-list-map-keys:
+                    - type
+                  x-kubernetes-list-type: map
+                dataVolumeSize:
+                  anyOf:
+                    - type: integer
+                    - type: string
+                  description: DataVolumeSize shows the current size of the mounted data volume
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
                 exportMode:
                   description: ExportMode shows if the export mode of the dogu is currently active.
                   type: boolean
@@ -291,46 +377,26 @@ spec:
                   description: InstalledVersion of the dogu (e.g. 2.4.48-3)
                   type: string
                 requeuePhase:
-                  description: RequeuePhase is the actual phase of the dogu resource used for a currently running async process.
+                  description: |-
+                    RequeuePhase is the actual phase of the dogu resource used for a currently running async process.
+                    Deprecated, should be removed at next major update
                   type: string
                 requeueTime:
-                  description: RequeueTime contains time necessary to perform the next requeue
+                  description: |-
+                    RequeueTime contains time necessary to perform the next requeue
+                    Deprecated, should be removed at next major update
                   format: int64
                   type: integer
+                startedAt:
+                  description: StartedAt contain the time of the last restart of the dogu.
+                  format: date-time
+                  type: string
                 status:
                   description: Status represents the state of the Dogu in the ecosystem
                   type: string
                 stopped:
                   description: Stopped shows if the dogu has been stopped or not.
                   type: boolean
-                dataVolumeSize:
-                  anyOf:
-                    - type: integer
-                    - type: string
-                  description: dataVolumeSize represents the current size of the volume.
-                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                  x-kubernetes-int-or-string: true
-                conditions:
-                  type: array
-                  description: a list of conditions for checking prerequisits and status changes
-                  items:
-                    type: object
-                    required:
-                      - type
-                      - status
-                      - lastTransitionTime
-                    properties:
-                      type:
-                        type: string
-                      status:
-                        type: string
-                      reason:
-                        type: string
-                      message:
-                        type: string
-                      lastTransitionTime:
-                        type: string
-                        format: date-time
               required:
                 - requeuePhase
                 - requeueTime
