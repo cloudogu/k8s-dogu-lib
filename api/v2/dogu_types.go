@@ -216,6 +216,7 @@ const (
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the resource"
 // +kubebuilder:printcolumn:name="Healthy",type="string",JSONPath=".status.conditions[?(@.type=='healthy')].status",description="Whether the resource is healthy in the current state"
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='ready')].status",description="Whether the resource is ready in the current state"
+// +kubebuilder:printcolumn:name="Pause Reconciliation",type="string",JSONPath=".status.conditions[?(@.type=='pauseReconciliation')].status",description="Whether the resource is ready in the current state"
 
 // Dogu is the Schema for the dogus API
 type Dogu struct {
