@@ -407,3 +407,11 @@ func TestDogu_GetMinDataVolumeSize(t *testing.T) {
 		testQuantity(&minsize, &size, int64(3221225472), &errorText)
 	})
 }
+
+func TestDogu_GetSimpleNameVersion(t *testing.T) {
+	sut := &Dogu{ObjectMeta: metav1.ObjectMeta{Name: "dogu"}, Spec: DoguSpec{Name: "official/dogu", Version: "1.2.3"}}
+	version, err := sut.GetSimpleNameVersion()
+	assert.NoError(t, err)
+	assert.Equal(t, "dogu", version.Name.String())
+	assert.Equal(t, "1.2.3", version.Version.String())
+}

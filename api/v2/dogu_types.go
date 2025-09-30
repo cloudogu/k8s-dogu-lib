@@ -242,6 +242,16 @@ func (d *Dogu) GetSimpleDoguName() cescommons.SimpleName {
 	return cescommons.SimpleName(d.Name)
 }
 
+// GetSimpleNameVersion returns the dogu's dogu.SimpleNameVersion.
+func (d *Dogu) GetSimpleNameVersion() (cescommons.SimpleNameVersion, error) {
+	version, err := core.ParseVersion(d.Spec.Version)
+	if err != nil {
+		return cescommons.SimpleNameVersion{}, err
+	}
+
+	return cescommons.NewSimpleNameVersion(d.GetSimpleDoguName(), version), nil
+}
+
 // GetDataVolumeName returns the data volume name for the dogu resource for volumes with backup
 func (d *Dogu) GetDataVolumeName() string {
 	return d.Name + "-data"
