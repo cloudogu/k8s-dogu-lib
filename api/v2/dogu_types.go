@@ -157,6 +157,7 @@ const (
 // DoguStatus defines the observed state of a Dogu.
 type DoguStatus struct {
 	// Status represents the state of the Dogu in the ecosystem
+	// Deprecated, should be removed at next major update
 	Status string `json:"status"`
 	// RequeueTime contains time necessary to perform the next requeue
 	// Deprecated, should be removed at next major update
@@ -167,6 +168,7 @@ type DoguStatus struct {
 	// StartedAt contain the time of the last restart of the dogu.
 	StartedAt metav1.Time `json:"startedAt,omitempty"`
 	// Health describes the health status of the dogu
+	// Deprecated, should be removed at next major update
 	Health HealthStatus `json:"health,omitempty"`
 	// InstalledVersion of the dogu (e.g. 2.4.48-3)
 	InstalledVersion string `json:"installedVersion,omitempty"`

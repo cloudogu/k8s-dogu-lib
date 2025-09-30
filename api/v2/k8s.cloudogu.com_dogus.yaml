@@ -46,6 +46,10 @@ spec:
           jsonPath: .status.conditions[?(@.type=='ready')].status
           name: Ready
           type: string
+        - description: Whether the resource is ready in the current state
+          jsonPath: .status.conditions[?(@.type=='pauseReconciliation')].status
+          name: Pause Reconciliation
+          type: string
       name: v2
       schema:
         openAPIV3Schema:
@@ -371,7 +375,9 @@ spec:
                   description: ExportMode shows if the export mode of the dogu is currently active.
                   type: boolean
                 health:
-                  description: Health describes the health status of the dogu
+                  description: |-
+                    Health describes the health status of the dogu
+                    Deprecated, should be removed at next major update
                   type: string
                 installedVersion:
                   description: InstalledVersion of the dogu (e.g. 2.4.48-3)
@@ -392,7 +398,9 @@ spec:
                   format: date-time
                   type: string
                 status:
-                  description: Status represents the state of the Dogu in the ecosystem
+                  description: |-
+                    Status represents the state of the Dogu in the ecosystem
+                    Deprecated, should be removed at next major update
                   type: string
                 stopped:
                   description: Stopped shows if the dogu has been stopped or not.
