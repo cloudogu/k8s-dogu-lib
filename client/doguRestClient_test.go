@@ -475,9 +475,9 @@ func Test_doguClient_UpdateStatusWithRetry(t *testing.T) {
 		dClient := client.Dogus("test")
 
 		// when
-		_, err = dClient.UpdateStatusWithRetry(context.TODO(), dogu, func(dogu k8sv2.Dogu) k8sv2.DoguStatus {
-			dogu.Status.Stopped = true
-			return dogu.Status
+		_, err = dClient.UpdateStatusWithRetry(context.TODO(), dogu, func(status k8sv2.DoguStatus) k8sv2.DoguStatus {
+			status.Stopped = true
+			return status
 		}, v1.UpdateOptions{})
 
 		// then

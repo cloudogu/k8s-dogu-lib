@@ -20,7 +20,7 @@ type DoguInterface interface {
 	Update(ctx context.Context, dogu *v2.Dogu, opts metav1.UpdateOptions) (*v2.Dogu, error)
 	UpdateSpecWithRetry(ctx context.Context, dogu *v2.Dogu, modifySpecFn func(spec v2.DoguSpec) v2.DoguSpec, opts metav1.UpdateOptions) (result *v2.Dogu, err error)
 	UpdateStatus(ctx context.Context, dogu *v2.Dogu, opts metav1.UpdateOptions) (*v2.Dogu, error)
-	UpdateStatusWithRetry(ctx context.Context, dogu *v2.Dogu, modifyStatusFn func(v2.Dogu) v2.DoguStatus, opts metav1.UpdateOptions) (result *v2.Dogu, err error)
+	UpdateStatusWithRetry(ctx context.Context, dogu *v2.Dogu, modifyStatusFn func(v2.DoguStatus) v2.DoguStatus, opts metav1.UpdateOptions) (result *v2.Dogu, err error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
 	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v2.Dogu, error)
@@ -150,7 +150,7 @@ func (d *doguClient) UpdateStatus(ctx context.Context, dogu *v2.Dogu, opts metav
 }
 
 // UpdateStatusWithRetry updates the status of the resource, retrying if a conflict error arises.
-func (d *doguClient) UpdateStatusWithRetry(ctx context.Context, dogu *v2.Dogu, modifyStatusFn func(v2.Dogu) v2.DoguStatus, opts metav1.UpdateOptions) (result *v2.Dogu, err error) {
+func (d *doguClient) UpdateStatusWithRetry(ctx context.Context, dogu *v2.Dogu, modifyStatusFn func(v2.DoguStatus) v2.DoguStatus, opts metav1.UpdateOptions) (result *v2.Dogu, err error) {
 	firstTry := true
 
 	var currentObj *v2.Dogu
@@ -165,7 +165,7 @@ func (d *doguClient) UpdateStatusWithRetry(ctx context.Context, dogu *v2.Dogu, m
 			}
 		}
 
-		currentObj.Status = modifyStatusFn(*currentObj)
+		currentObj.Status = modifyStatusFn(currentObj.Status)
 		currentObj, err = d.UpdateStatus(ctx, currentObj, opts)
 		return err
 	})
