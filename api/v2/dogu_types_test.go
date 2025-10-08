@@ -409,9 +409,170 @@ func TestDogu_GetMinDataVolumeSize(t *testing.T) {
 }
 
 func TestDogu_GetSimpleNameVersion(t *testing.T) {
-	sut := &Dogu{ObjectMeta: metav1.ObjectMeta{Name: "dogu"}, Spec: DoguSpec{Name: "official/dogu", Version: "1.2.3"}}
-	version, err := sut.GetSimpleNameVersion()
-	assert.NoError(t, err)
-	assert.Equal(t, "dogu", version.Name.String())
-	assert.Equal(t, "1.2.3", version.Version.String())
+	t.Run("should get simple name version", func(t *testing.T) {
+		sut := &Dogu{ObjectMeta: metav1.ObjectMeta{Name: "dogu"}, Spec: DoguSpec{Name: "official/dogu", Version: "1.2.3"}}
+		version, err := sut.GetSimpleNameVersion()
+		assert.NoError(t, err)
+		assert.Equal(t, "dogu", version.Name.String())
+		assert.Equal(t, "1.2.3", version.Version.String())
+	})
+
+	t.Run("should fail to parse version", func(t *testing.T) {
+		sut := &Dogu{ObjectMeta: metav1.ObjectMeta{Name: "dogu"}, Spec: DoguSpec{Name: "official/dogu", Version: "1.2xxx"}}
+		_, err := sut.GetSimpleNameVersion()
+		assert.Error(t, err)
+	})
+
+}
+
+func TestDogu_GetConditions(t *testing.T) {
+	dogu := Dogu{
+		Status: DoguStatus{
+			Conditions: []metav1.Condition{
+				{Type: "aType"},
+			},
+		},
+	}
+
+	conditions := dogu.GetConditions()
+
+	assert.Equal(t, "aType", conditions[0].Type)
+}
+
+func TestDogu_SetConditions(t *testing.T) {
+	dogu := Dogu{}
+
+	dogu.SetConditions([]metav1.Condition{
+		{Type: "aType"},
+	})
+
+	assert.Equal(t, "aType", dogu.Status.Conditions[0].Type)
+
+}
+
+func TestDogu_Update(t *testing.T) {
+	t.Run("should update status", func(t *testing.T) {
+		dogu := Dogu{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "aDogu",
+			},
+		}
+
+		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).WithObjects(&dogu).WithStatusSubresource(&dogu).Build()
+
+		err := dogu.Update(testCtx, fakeClient)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("should fail to update status", func(t *testing.T) {
+		dogu := Dogu{}
+
+		fakeClient := fake.NewClientBuilder().WithScheme(getDoguTypesTestScheme()).Build()
+
+		err := dogu.Update(testCtx, fakeClient)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to update dogu status")
+	})
+}
+
+func TestDogu_GetPodLabelsWithStatusVersion(t *testing.T) {
+	dogu := Dogu{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "aDogu",
+		},
+		Status: DoguStatus{
+			InstalledVersion: "1.0.0",
+		},
+	}
+
+	labels := dogu.GetPodLabelsWithStatusVersion()
+
+	assert.Equal(t, "aDogu", labels[DoguLabelName])
+	assert.Equal(t, "1.0.0", labels[DoguLabelVersion])
+}
+
+func TestDogu_GetDataPVC(t *testing.T) {
+	t.Run("should return pvc data", func(t *testing.T) {
+		dogu := Dogu{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "aDogu",
+				Namespace: "aNamespace",
+			},
+		}
+
+		fakePvc := &corev1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "aDogu",
+				Namespace: "aNamespace",
+			},
+		}
+		fakeClient := fake.NewClientBuilder().
+			WithObjects(fakePvc).
+			Build()
+
+		pvc, err := dogu.GetDataPVC(testCtx, fakeClient)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "aDogu", pvc.Name)
+	})
+
+	t.Run("should fail to get pvc data", func(t *testing.T) {
+		dogu := Dogu{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "aDogu",
+				Namespace: "aNamespace",
+			},
+		}
+
+		fakeClient := fake.NewClientBuilder().Build()
+
+		_, err := dogu.GetDataPVC(testCtx, fakeClient)
+
+		assert.Error(t, err)
+	})
+
+}
+
+func TestDogu_GetDeployment(t *testing.T) {
+	t.Run("should get deployment", func(t *testing.T) {
+		dogu := Dogu{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "aDogu",
+				Namespace: "aNamespace",
+			},
+		}
+
+		fakeDeployment := &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "aDogu",
+				Namespace: "aNamespace",
+			},
+		}
+		fakeClient := fake.NewClientBuilder().
+			WithObjects(fakeDeployment).
+			Build()
+
+		dpl, err := dogu.GetDeployment(testCtx, fakeClient)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "aDogu", dpl.Name)
+	})
+
+	t.Run("should fail to get deployment", func(t *testing.T) {
+		dogu := Dogu{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "aDogu",
+				Namespace: "aNamespace",
+			},
+		}
+
+		fakeClient := fake.NewClientBuilder().Build()
+
+		_, err := dogu.GetDeployment(testCtx, fakeClient)
+
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "failed to get deployment for dogu")
+	})
 }
