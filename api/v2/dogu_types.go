@@ -122,6 +122,7 @@ type UpgradeConfig struct {
 }
 
 // DoguResources defines the physical resources used by the dogu.
+// +kubebuilder:validation:XValidation:rule="!has(oldSelf.dataVolumeStorageClass) || has(self.dataVolumeStorageClass)", message="DataVolumeStorageClass is required once set"
 type DoguResources struct {
 	// DataVolumeSize represents the desired size of the volume. Increasing this value leads to an automatic volume
 	// expansion. This includes a downtime for the respective dogu. The default size for volumes is "2Gi".
@@ -139,6 +140,12 @@ type DoguResources struct {
 	// The value of MinDataVolumeSize takes precedent over DataVolumeSize.
 	// To consider both values when reading, call Dogu.GetMinDataVolumeSize.
 	MinDataVolumeSize resource.Quantity `json:"minDataVolumeSize,omitempty"`
+	// DataVolumeStorageClass specifies the storage class to be used for the data volume.
+	// Assumes the default storage class configured in the cluster if empty.
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="DataVolumeStorageClass is immutable"
+	// +kubebuilder:validation:MaxLength=253
+	DataVolumeStorageClass string `json:"dataVolumeStorageClass,omitempty"`
 }
 
 type HealthStatus string
