@@ -122,7 +122,7 @@ type UpgradeConfig struct {
 }
 
 // DoguResources defines the physical resources used by the dogu.
-// +kubebuilder:validation:XValidation:rule="!has(oldSelf.dataVolumeStorageClass) || has(self.dataVolumeStorageClass)", message="DataVolumeStorageClass is required once set"
+// +kubebuilder:validation:XValidation:rule="(!has(oldSelf.storageClassName) && !has(self.storageClassName)) || (has(oldSelf.storageClassName) && has(self.storageClassName))", message="StorageClassName cannot be set or unset after creation"
 type DoguResources struct {
 	// DataVolumeSize represents the desired size of the volume. Increasing this value leads to an automatic volume
 	// expansion. This includes a downtime for the respective dogu. The default size for volumes is "2Gi".
@@ -140,12 +140,13 @@ type DoguResources struct {
 	// The value of MinDataVolumeSize takes precedent over DataVolumeSize.
 	// To consider both values when reading, call Dogu.GetMinDataVolumeSize.
 	MinDataVolumeSize resource.Quantity `json:"minDataVolumeSize,omitempty"`
-	// DataVolumeStorageClass specifies the storage class to be used for the data volume.
-	// Assumes the default storage class configured in the cluster if empty.
+	// StorageClassName specifies the storage class to be used for the data volume.
+	// For the difference between null and empty string, see the appropriate kubernetes documentation:
+	// https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class-1
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="DataVolumeStorageClass is immutable"
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="StorageClassName is immutable"
 	// +kubebuilder:validation:MaxLength=253
-	DataVolumeStorageClass string `json:"dataVolumeStorageClass,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
 }
 
 type HealthStatus string
