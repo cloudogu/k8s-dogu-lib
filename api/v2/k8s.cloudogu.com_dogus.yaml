@@ -152,7 +152,20 @@ spec:
                         To consider both values when reading, call Dogu.GetMinDataVolumeSize.
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
+                    storageClassName:
+                      description: |-
+                        StorageClassName specifies the storage class to be used for the data volume.
+                        For the difference between null and empty string, see the appropriate kubernetes documentation:
+                        https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class-1
+                      maxLength: 253
+                      type: string
+                      x-kubernetes-validations:
+                        - message: StorageClassName is immutable
+                          rule: self == oldSelf
                   type: object
+                  x-kubernetes-validations:
+                    - message: StorageClassName cannot be set or unset after creation
+                      rule: (!has(oldSelf.storageClassName) && !has(self.storageClassName)) || (has(oldSelf.storageClassName) && has(self.storageClassName))
                 security:
                   description: Security overrides security policies defined in the dogu descriptor. These fields can be used to further reduce a dogu's attack surface.
                   properties:
