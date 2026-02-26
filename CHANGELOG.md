@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.12.0] - 2026-02-26
+- [#14] Update go dependencies
+
 ## [v2.11.0] - 2026-01-05
 ### Added
 - [#11] Field for data volume storage class
