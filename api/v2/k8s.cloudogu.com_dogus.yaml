@@ -75,11 +75,6 @@ spec:
             spec:
               description: DoguSpec defines the desired state of a Dogu
               properties:
-                additionalIngressAnnotations:
-                  additionalProperties:
-                    type: string
-                  description: AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
-                  type: object
                 additionalMounts:
                   description: AdditionalMounts provides the possibility to mount additional data into the dogu.
                   items:
