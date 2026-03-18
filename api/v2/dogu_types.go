@@ -68,8 +68,6 @@ type DoguSpec struct {
 	PauseReconciliation bool `json:"pauseReconciliation,omitempty"`
 	// UpgradeConfig contains options to manipulate the upgrade process.
 	UpgradeConfig UpgradeConfig `json:"upgradeConfig,omitempty"`
-	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
-	AdditionalIngressAnnotations IngressAnnotations `json:"additionalIngressAnnotations,omitempty"`
 	// AdditionalMounts provides the possibility to mount additional data into the dogu.
 	// +optional
 	AdditionalMounts []DataMount `json:"additionalMounts,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
@@ -106,9 +104,6 @@ type DataMount struct {
 	// +optional
 	Subfolder string `json:"subfolder,omitempty"`
 }
-
-// IngressAnnotations are annotations of nginx-ingress rules.
-type IngressAnnotations map[string]string
 
 // UpgradeConfig contains configuration hints for the dogu operator regarding aspects during the upgrade of dogus.
 type UpgradeConfig struct {
