@@ -15,7 +15,7 @@ metadata:
 spec:
   name: official/usermgt
   version: 1.20.0-5
-  additionalIngressAnnotations:
+  additionalIngressAnnotations: # deprecated
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
   additionalMounts:
     - sourceType: ConfigMap
@@ -65,6 +65,8 @@ spec:
 * Example: `"version": "1.20.0-5"`
 
 ## AdditionalIngressAnnotations
+
+This field is `deprecated`.
 
 * Optional
 * Data type: string
