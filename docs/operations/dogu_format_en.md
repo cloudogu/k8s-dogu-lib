@@ -15,6 +15,8 @@ metadata:
 spec:
   name: official/usermgt
   version: 1.20.0-5
+  additionalIngressAnnotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
   additionalMounts:
     - sourceType: ConfigMap
       name: my-configmap
@@ -61,6 +63,18 @@ spec:
 * Data type: string
 * Content: Specifies the version of the Dogu.
 * Example: `"version": "1.20.0-5"`
+
+## AdditionalIngressAnnotations
+
+* Optional
+* Data type: string
+* Content: AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
+* Example:
+
+```
+additionalIngressAnnotations:
+  nginx.ingress.kubernetes.io/proxy-body-size: "0"
+```
 
 ## AdditionalMounts
 
