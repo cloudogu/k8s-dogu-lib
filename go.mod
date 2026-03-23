@@ -1,4 +1,4 @@
-module github.com/cloudogu/k8s-dogu-lib/v2
+module github.com/cloudogu/k8s-dogu-lib/v3
 
 go 1.26.0
 

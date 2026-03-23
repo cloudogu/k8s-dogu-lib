@@ -1,4 +1,4 @@
-package v2
+package v3
 
 import "sigs.k8s.io/controller-runtime/pkg/client"
 

@@ -35,8 +35,8 @@ include build/make/release.mk
 
 .PHONY: crd-copy-for-go-embedding
 crd-copy-for-go-embedding:
-	@echo "Copy CRD to api/v2/"
-	@cp ${CRD_DOGU_SOURCE} api/v2/
+	@echo "Copy CRD to api/v3/"
+	@cp ${CRD_DOGU_SOURCE} api/v3/
 
 # Override make target to use k8s-dogu-lib as label
 .PHONY: crd-add-labels

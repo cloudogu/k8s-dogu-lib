@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/cloudogu/k8s-dogu-lib/v2/api/v2"
+	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -19,12 +19,12 @@ type EcoSystemV2Client struct {
 
 func NewForConfig(c *rest.Config) (*EcoSystemV2Client, error) {
 	config := *c
-	gv := schema.GroupVersion{Group: v2.GroupVersion.Group, Version: v2.GroupVersion.Version}
+	gv := schema.GroupVersion{Group: v3.GroupVersion.Group, Version: v3.GroupVersion.Version}
 	config.ContentConfig.GroupVersion = &gv
 	config.APIPath = "/apis"
 
 	s := scheme.Scheme
-	err := v2.AddToScheme(s)
+	err := v3.AddToScheme(s)
 	if err != nil {
 		return nil, err
 	}

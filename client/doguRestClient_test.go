@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
-	k8sv2 "github.com/cloudogu/k8s-dogu-lib/v2/api/v2"
+	k8sv3 "github.com/cloudogu/k8s-dogu-lib/v3/api/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -26,7 +26,7 @@ func Test_doguClient_Get(t *testing.T) {
 			assert.Equal(t, http.NoBody, request.Body)
 
 			writer.Header().Add("content-type", "application/json")
-			dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "testdogu", Namespace: "test"}}
+			dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "testdogu", Namespace: "test"}}
 			doguBytes, err := json.Marshal(dogu)
 			require.NoError(t, err)
 			_, err = writer.Write(doguBytes)
@@ -58,8 +58,8 @@ func Test_doguClient_List(t *testing.T) {
 			assert.Equal(t, http.NoBody, request.Body)
 
 			writer.Header().Add("content-type", "application/json")
-			doguList := k8sv2.DoguList{}
-			dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "testdogu", Namespace: "test"}}
+			doguList := k8sv3.DoguList{}
+			dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "testdogu", Namespace: "test"}}
 			doguList.Items = append(doguList.Items, *dogu)
 			doguBytes, err := json.Marshal(doguList)
 			require.NoError(t, err)
@@ -86,7 +86,7 @@ func Test_doguClient_List(t *testing.T) {
 func Test_doguClient_Create(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// given
-		dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "tocreate", Namespace: "test"}}
+		dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "tocreate", Namespace: "test"}}
 
 		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			assert.Equal(t, http.MethodPost, request.Method)
@@ -95,7 +95,7 @@ func Test_doguClient_Create(t *testing.T) {
 			bytes, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 
-			createdDogu := &k8sv2.Dogu{}
+			createdDogu := &k8sv3.Dogu{}
 			require.NoError(t, json.Unmarshal(bytes, createdDogu))
 			assert.Equal(t, "tocreate", createdDogu.Name)
 
@@ -123,7 +123,7 @@ func Test_doguClient_Create(t *testing.T) {
 func Test_doguClient_Update(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// given
-		dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "tocreate", Namespace: "test"}}
+		dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "tocreate", Namespace: "test"}}
 
 		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			assert.Equal(t, http.MethodPut, request.Method)
@@ -132,7 +132,7 @@ func Test_doguClient_Update(t *testing.T) {
 			bytes, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 
-			createdDogu := &k8sv2.Dogu{}
+			createdDogu := &k8sv3.Dogu{}
 			require.NoError(t, json.Unmarshal(bytes, createdDogu))
 			assert.Equal(t, "tocreate", createdDogu.Name)
 
@@ -160,7 +160,7 @@ func Test_doguClient_Update(t *testing.T) {
 func Test_doguClient_UpdateStatus(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// given
-		dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "tocreate", Namespace: "test"}}
+		dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "tocreate", Namespace: "test"}}
 
 		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			assert.Equal(t, http.MethodPut, request.Method)
@@ -169,7 +169,7 @@ func Test_doguClient_UpdateStatus(t *testing.T) {
 			bytes, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 
-			createdDogu := &k8sv2.Dogu{}
+			createdDogu := &k8sv3.Dogu{}
 			require.NoError(t, json.Unmarshal(bytes, createdDogu))
 			assert.Equal(t, "tocreate", createdDogu.Name)
 
@@ -255,7 +255,7 @@ func Test_doguClient_Patch(t *testing.T) {
 			bytes, err := io.ReadAll(request.Body)
 			require.NoError(t, err)
 			assert.Equal(t, []byte("test"), bytes)
-			result, err := json.Marshal(k8sv2.Dogu{})
+			result, err := json.Marshal(k8sv3.Dogu{})
 			require.NoError(t, err)
 
 			writer.Header().Add("content-type", "application/json")
@@ -314,7 +314,7 @@ func Test_doguClient_Watch(t *testing.T) {
 func Test_doguClient_UpdateSpecWithRetry(t *testing.T) {
 	t.Run("should retry on conflict error", func(t *testing.T) {
 		// given
-		dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Spec: k8sv2.DoguSpec{Version: "1.0.0"}}
+		dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Spec: k8sv3.DoguSpec{Version: "1.0.0"}}
 
 		firstPut := true
 
@@ -327,7 +327,7 @@ func Test_doguClient_UpdateSpecWithRetry(t *testing.T) {
 				bytes, err := io.ReadAll(request.Body)
 				require.NoError(t, err)
 
-				updatedDogu := &k8sv2.Dogu{}
+				updatedDogu := &k8sv3.Dogu{}
 				require.NoError(t, json.Unmarshal(bytes, updatedDogu))
 				assert.Equal(t, "toUpdate", updatedDogu.Name)
 				assert.Equal(t, "1.0.2", updatedDogu.Spec.Version)
@@ -351,7 +351,7 @@ func Test_doguClient_UpdateSpecWithRetry(t *testing.T) {
 				assert.Equal(t, http.NoBody, request.Body)
 
 				writer.Header().Add("content-type", "application/json")
-				doguRestart := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Spec: k8sv2.DoguSpec{Version: "1.0.1"}}
+				doguRestart := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Spec: k8sv3.DoguSpec{Version: "1.0.1"}}
 				doguBytes, err := json.Marshal(doguRestart)
 				require.NoError(t, err)
 				writer.WriteHeader(200)
@@ -367,7 +367,7 @@ func Test_doguClient_UpdateSpecWithRetry(t *testing.T) {
 				bytes, err := io.ReadAll(request.Body)
 				require.NoError(t, err)
 
-				updatedDogu := &k8sv2.Dogu{}
+				updatedDogu := &k8sv3.Dogu{}
 				require.NoError(t, json.Unmarshal(bytes, updatedDogu))
 				assert.Equal(t, "toUpdate", updatedDogu.Name)
 				assert.Equal(t, "1.0.2", updatedDogu.Spec.Version)
@@ -388,7 +388,7 @@ func Test_doguClient_UpdateSpecWithRetry(t *testing.T) {
 		dClient := client.Dogus("test")
 
 		// when
-		_, err = dClient.UpdateSpecWithRetry(context.TODO(), dogu, func(spec k8sv2.DoguSpec) k8sv2.DoguSpec {
+		_, err = dClient.UpdateSpecWithRetry(context.TODO(), dogu, func(spec k8sv3.DoguSpec) k8sv3.DoguSpec {
 			spec.Version = "1.0.2"
 			return spec
 		}, v1.UpdateOptions{})
@@ -401,7 +401,7 @@ func Test_doguClient_UpdateSpecWithRetry(t *testing.T) {
 func Test_doguClient_UpdateStatusWithRetry(t *testing.T) {
 	t.Run("should retry on conflict error", func(t *testing.T) {
 		// given
-		dogu := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Spec: k8sv2.DoguSpec{Version: "1.0.0"}}
+		dogu := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Spec: k8sv3.DoguSpec{Version: "1.0.0"}}
 
 		firstPut := true
 
@@ -414,7 +414,7 @@ func Test_doguClient_UpdateStatusWithRetry(t *testing.T) {
 				bytes, err := io.ReadAll(request.Body)
 				require.NoError(t, err)
 
-				updatedDogu := &k8sv2.Dogu{}
+				updatedDogu := &k8sv3.Dogu{}
 				require.NoError(t, json.Unmarshal(bytes, updatedDogu))
 				assert.Equal(t, "toUpdate", updatedDogu.Name)
 				assert.Equal(t, true, updatedDogu.Status.Stopped)
@@ -438,7 +438,7 @@ func Test_doguClient_UpdateStatusWithRetry(t *testing.T) {
 				assert.Equal(t, http.NoBody, request.Body)
 
 				writer.Header().Add("content-type", "application/json")
-				doguRestart := &k8sv2.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Status: k8sv2.DoguStatus{Stopped: false}}
+				doguRestart := &k8sv3.Dogu{ObjectMeta: v1.ObjectMeta{Name: "toUpdate", Namespace: "test"}, Status: k8sv3.DoguStatus{Stopped: false}}
 				doguBytes, err := json.Marshal(doguRestart)
 				require.NoError(t, err)
 				writer.WriteHeader(200)
@@ -454,7 +454,7 @@ func Test_doguClient_UpdateStatusWithRetry(t *testing.T) {
 				bytes, err := io.ReadAll(request.Body)
 				require.NoError(t, err)
 
-				updatedDogu := &k8sv2.Dogu{}
+				updatedDogu := &k8sv3.Dogu{}
 				require.NoError(t, json.Unmarshal(bytes, updatedDogu))
 				assert.Equal(t, "toUpdate", updatedDogu.Name)
 				assert.Equal(t, true, updatedDogu.Status.Stopped)
@@ -475,7 +475,7 @@ func Test_doguClient_UpdateStatusWithRetry(t *testing.T) {
 		dClient := client.Dogus("test")
 
 		// when
-		_, err = dClient.UpdateStatusWithRetry(context.TODO(), dogu, func(status k8sv2.DoguStatus) k8sv2.DoguStatus {
+		_, err = dClient.UpdateStatusWithRetry(context.TODO(), dogu, func(status k8sv3.DoguStatus) k8sv3.DoguStatus {
 			status.Stopped = true
 			return status
 		}, v1.UpdateOptions{})
