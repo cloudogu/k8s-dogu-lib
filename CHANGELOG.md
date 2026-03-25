@@ -6,9 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v2.13.0] - 2026-03-18
-### Removed 
-- [#16] Remove additionalIngressAnnotations from Dogu CRD
+## [v2.13.0] - 2026-03-25
+- [#16] Mark additionalIngressAnnotations as deprecated  
 
 ## [v2.12.0] - 2026-02-26
 - [#14] Update go dependencies
