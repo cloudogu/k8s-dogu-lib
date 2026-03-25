@@ -69,7 +69,7 @@ type DoguSpec struct {
 	// UpgradeConfig contains options to manipulate the upgrade process.
 	UpgradeConfig UpgradeConfig `json:"upgradeConfig,omitempty"`
 	// Deprecated: This field is not used anymore. It was used to provide additional configuration for the nginx ingress controller.
-	// The traefik ingress controller don't need this configuration.
+	// The traefik ingress controller doesn't need this configuration.
 	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
 	AdditionalIngressAnnotations IngressAnnotations `json:"additionalIngressAnnotations,omitempty"`
 	// AdditionalMounts provides the possibility to mount additional data into the dogu.
