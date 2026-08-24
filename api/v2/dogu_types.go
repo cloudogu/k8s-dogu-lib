@@ -5,6 +5,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"time"
 
@@ -479,13 +480,9 @@ type CesMatchingLabels client.MatchingLabels
 // Add takes the currently existing labels from this object and returns a sum of all provided labels as a new object.
 func (cml CesMatchingLabels) Add(moreLabels CesMatchingLabels) CesMatchingLabels {
 	result := CesMatchingLabels{}
-	for key, value := range cml {
-		result[key] = value
-	}
+	maps.Copy(result, cml)
 
-	for key, value := range moreLabels {
-		result[key] = value
-	}
+	maps.Copy(result, moreLabels)
 
 	return result
 }
