@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -36,6 +37,7 @@ var testDogu = &Dogu{
 	},
 	Status: DoguStatus{Status: ""},
 }
+var testDoguV3 = &Dogu{ObjectMeta: metav1.ObjectMeta{Annotations: map[string]string{doguApiVersionAnnotationKey: string(v3beta1.DoguApiVersionV3)}}}
 var testCtx = context.Background()
 
 func TestDogu_GetSecretObjectKey(t *testing.T) {
@@ -48,11 +50,19 @@ func TestDogu_GetSecretObjectKey(t *testing.T) {
 	}
 
 	// when
-	key := ds.GetSecretObjectKey()
+	key, err := ds.GetSecretObjectKey()
 
 	// then
+	require.NoError(t, err)
 	assert.Equal(t, "myspecialdogu-secrets", key.Name)
 	assert.Equal(t, "testnamespace", key.Namespace)
+}
+
+func TestDogu_GetSecretObjectKeyV3(t *testing.T) {
+	_, err := testDoguV3.GetSecretObjectKey()
+
+	// then
+	require.Error(t, err, "GetSecretObjectKey is only supported for v2 dogus")
 }
 
 func TestDogu_GetObjectKey(t *testing.T) {
@@ -76,15 +86,29 @@ func TestDogu_GetObjectMeta(t *testing.T) {
 }
 
 func TestDogu_GetDataVolumeName(t *testing.T) {
-	actual := testDogu.GetDataVolumeName()
+	actual, err := testDogu.GetDataVolumeName()
 
+	require.NoError(t, err)
 	assert.Equal(t, "dogu-data", actual)
 }
 
-func TestDogu_GetPrivateVolumeName(t *testing.T) {
-	actual := testDogu.GetPrivateKeySecretName()
+func TestDogu_GetDataVolumeNameError(t *testing.T) {
+	_, err := testDoguV3.GetDataVolumeName()
 
+	require.ErrorContains(t, err, "GetDataVolumeName is only supported for v2 dogus")
+}
+
+func TestDogu_GetPrivateVolumeName(t *testing.T) {
+	actual, err := testDogu.GetPrivateKeySecretName()
+
+	require.NoError(t, err)
 	assert.Equal(t, "dogu-private", actual)
+}
+
+func TestDogu_GetPrivateVolumeNameV3(t *testing.T) {
+	_, err := testDoguV3.GetPrivateKeySecretName()
+
+	require.ErrorContains(t, err, "GetPrivateKeySecretName is only supported for v2 dogus")
 }
 
 func TestDogu_GetDevelopmentDoguMapKey(t *testing.T) {
@@ -98,13 +122,20 @@ func TestDogu_GetDevelopmentDoguMapKey(t *testing.T) {
 }
 
 func TestDogu_GetPrivateKeyObjectKey(t *testing.T) {
-	actual := testDogu.GetPrivateKeyObjectKey()
+	actual, err := testDogu.GetPrivateKeyObjectKey()
 
+	require.NoError(t, err)
 	expectedKey := client.ObjectKey{
 		Namespace: "ecosystem",
 		Name:      "dogu-private",
 	}
 	assert.Equal(t, expectedKey, actual)
+}
+
+func TestDogu_GetPrivateKeyObjectKeyV3(t *testing.T) {
+	_, err := testDoguV3.GetPrivateKeyObjectKey()
+
+	require.ErrorContains(t, err, "GetPrivateKeySecretName is only supported for v2 dogus")
 }
 
 func TestCesMatchingLabels_Add(t *testing.T) {
@@ -175,6 +206,12 @@ func TestDogu_GetPod(t *testing.T) {
 	// ignore ResourceVersion which is introduced during getting pods from the K8s API
 	actual.ResourceVersion = ""
 	assert.Equal(t, exptectedPod, actual)
+}
+
+func TestDogu_GetPodV3(t *testing.T) {
+	_, err := testDoguV3.GetPod(testCtx, nil)
+
+	require.ErrorContains(t, err, "GetPod is only supported for v2 dogus")
 }
 
 func TestDevelopmentDoguMap_DeleteFromCluster(t *testing.T) {
@@ -296,6 +333,10 @@ func TestDogu_GetPrivateKeySecret(t *testing.T) {
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "failed to get private key secret for dogu")
 	})
+	t.Run("should return error on v3 dogu", func(t *testing.T) {
+		_, err := testDoguV3.GetPrivateKeySecret(testCtx, nil)
+		require.ErrorContains(t, err, "GetPrivateKeySecretName is only supported for v2 dogus")
+	})
 }
 
 func TestDogu_ValidateSecurity(t *testing.T) {
@@ -347,6 +388,10 @@ func TestDogu_ValidateSecurity_message(t *testing.T) {
 		require.Error(t, actual)
 		assert.ErrorContains(t, actual, "dogu resource official/dogu:1.2.3 contains at least one invalid security field: err is not a valid capability to be added")
 	})
+	t.Run("should return error on v3 dogu", func(t *testing.T) {
+		err := testDoguV3.ValidateSecurity()
+		require.ErrorContains(t, err, "ValidateSecurity is only supported for v2 dogus")
+	})
 }
 
 func TestDogu_GetMinDataVolumeSize(t *testing.T) {
@@ -379,6 +424,11 @@ func TestDogu_GetMinDataVolumeSize(t *testing.T) {
 			assert.ErrorContains(t, err, *errortext)
 		}
 	}
+
+	t.Run("should return error on v3", func(t *testing.T) {
+		_, err := testDoguV3.GetMinDataVolumeSize()
+		require.ErrorContains(t, err, "GetMinDataVolumeSize is only supported for v2 dogus")
+	})
 
 	t.Run("min Data volume size should be default", func(t *testing.T) {
 		testQuantity(nil, nil, int64(2147483648), nil)
@@ -533,6 +583,11 @@ func TestDogu_GetDataPVC(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("should return error on v3 dogu", func(t *testing.T) {
+		_, err := testDoguV3.GetDataPVC(testCtx, nil)
+		require.ErrorContains(t, err, "GetDataPVC is only supported for v2 dogus")
+	})
+
 }
 
 func TestDogu_GetDeployment(t *testing.T) {
@@ -574,5 +629,10 @@ func TestDogu_GetDeployment(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "failed to get deployment for dogu")
+	})
+
+	t.Run("should return error on v3 dogu", func(t *testing.T) {
+		_, err := testDoguV3.GetDeployment(testCtx, nil)
+		require.ErrorContains(t, err, "GetDeployment is only supported for v2 dogus")
 	})
 }

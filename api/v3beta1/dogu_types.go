@@ -1,22 +1,15 @@
-package v2
+package v3beta1
 
 import (
-	"context"
 	"embed"
-	"errors"
-	"fmt"
-	"slices"
 	"time"
 
 	cescommons "github.com/cloudogu/ces-commons-lib/dogu"
 	"github.com/cloudogu/cesapp-lib/core"
-	"github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api/util/conditions"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -25,22 +18,14 @@ import (
 // This embed provides the crd for other applications. They can import this package and use the yaml file
 // for the CRD in e.g. integration tests. Otherwise, this file would not be present in the golang vendor directory.
 // The file gets refreshed by copying from controller-gen by the "crd-helm-generate/crd-copy-for-go-embedding" make target.
+// TODO Check with v2 compatibility
 //
 //go:embed k8s.cloudogu.com_dogus.yaml
 var _ embed.FS
 
-// interface constraints
+// Compile-Time Interface Assertions
 var _ conditions.Getter = &Dogu{}
 var _ conditions.Setter = &Dogu{}
-
-const (
-	onlyV2SupportedFmt = "%s is only supported for v2 dogus"
-)
-
-const (
-	// DefaultVolumeSize is the default size of a new dogu volume if no volume size is specified in the dogu resource.
-	DefaultVolumeSize = "2Gi"
-)
 
 const (
 	// DoguLabelName is used to select a dogu pod by name.
@@ -49,19 +34,55 @@ const (
 	DoguLabelVersion = "dogu.version"
 )
 
+// DoguApiVersion tells the operator's reconciler which internal deployment routine to
+// run for a dogu.
+// +enum
+type DoguApiVersion string
+
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
+const (
+	// DoguApiVersionV2 builds Kubernetes resources ad-hoc from the dogu's attributes,
+	// the same way k8s.cloudogu.com/v2 dogus are deployed.
+	DoguApiVersionV2 DoguApiVersion = "v2"
+	// DoguApiVersionV3 deploys and manages the dogu as a Helm release, using
+	// DoguSpec.Values as values.yaml overrides.
+	DoguApiVersionV3 DoguApiVersion = "v3"
+)
+
 // DoguSpec defines the desired state of a Dogu
 type DoguSpec struct {
-	// Name of the dogu (e.g. official/ldap)
+	// Name of the dogu without the namespace (e.g., ldap)
 	Name string `json:"name,omitempty"`
+	// DoguNamespace of the dogu without the actual dogu name (e.g., official)
+	DoguNamespace string `json:"doguNamespace,omitempty"`
 	// Version of the dogu (e.g. 2.4.48-3)
 	Version string `json:"version,omitempty"`
-	// Resources of the dogu (e.g. dataVolumeSize)
+
+	// DoguApiVersion tells the operator's reconciler which internal deployment routine to run for this
+	// dogu. "v2" builds Kubernetes resources ad-hoc from the dogu's attributes (compatible with
+	// k8s.cloudogu.com/v2 dogus). "v3" deploys the dogu as a Helm release, configured via Values.
+	// +kubebuilder:validation:Enum=v2;v3
+	// +kubebuilder:default=v2
+	// +optional
+	DoguApiVersion DoguApiVersion `json:"doguApiVersion,omitempty"`
+	// Values contains Helm values.yaml overrides for this dogu's chart. Only meaningful when
+	// DoguApiVersion is "v3"; ignored otherwise. The structure is arbitrary and validated by the
+	// chart itself, not by this schema.
+	// +optional
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Values runtime.RawExtension `json:"values,omitempty"`
+
+	// Deprecated: Resources is only honored by the "legacy" deployment strategy. Helm-deployed
+	// dogus (DoguApiVersion=helm) configure volume sizing via Values instead.
 	Resources DoguResources `json:"resources,omitempty"`
-	// Security overrides security policies defined in the dogu descriptor. These fields can be used to further reduce a dogu's attack surface.
+	// Deprecated: Security is only honored by the "legacy" deployment strategy. Helm-deployed
+	// dogus (DoguApiVersion=helm) configure container security via Values instead.
 	// +optional
 	Security Security `json:"security,omitempty"`
-	// SupportMode indicates whether the dogu should be restarted in the support mode (f. e. to recover manually from
-	// a crash loop).
+	// Deprecated: SupportMode is only honored by the "legacy" deployment strategy.
 	SupportMode bool `json:"supportMode,omitempty"`
 	// ExportMode indicates whether the dogu should be in "export mode". If true, the operator will spawn an exporter sidecar
 	// container along with a new volume mount to aid the migration process from one Cloudogu EcoSystem to another.
@@ -77,7 +98,8 @@ type DoguSpec struct {
 	// The traefik ingress controller doesn't need this configuration.
 	// AdditionalIngressAnnotations provides additional annotations that get included into the dogu's ingress rules.
 	AdditionalIngressAnnotations IngressAnnotations `json:"additionalIngressAnnotations,omitempty"`
-	// AdditionalMounts provides the possibility to mount additional data into the dogu.
+	// Deprecated: AdditionalMounts is only honored by the "legacy" deployment strategy. Helm-deployed
+	// dogus (DoguApiVersion=helm) configure additional mounts via Values instead.
 	// +optional
 	AdditionalMounts []DataMount `json:"additionalMounts,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
 }
@@ -129,6 +151,8 @@ type UpgradeConfig struct {
 }
 
 // DoguResources defines the physical resources used by the dogu.
+//
+// Deprecated: Resources is only honored by the "legacy" deployment strategy.
 // +kubebuilder:validation:XValidation:rule="(!has(oldSelf.storageClassName) && !has(self.storageClassName)) || (has(oldSelf.storageClassName) && has(self.storageClassName))", message="StorageClassName cannot be set or unset after creation"
 type DoguResources struct {
 	// DataVolumeSize represents the desired size of the volume. Increasing this value leads to an automatic volume
@@ -172,26 +196,29 @@ const (
 // DoguStatus defines the observed state of a Dogu.
 type DoguStatus struct {
 	// Status represents the state of the Dogu in the ecosystem
-	// Deprecated, should be removed at next major update
+	// Deprecated, should be removed at the next major update
 	Status string `json:"status"`
 	// RequeueTime contains time necessary to perform the next requeue
-	// Deprecated, should be removed at next major update
+	// Deprecated, should be removed at the next major update
 	RequeueTime time.Duration `json:"requeueTime"`
 	// RequeuePhase is the actual phase of the dogu resource used for a currently running async process.
 	// Deprecated, should be removed at next major update
 	RequeuePhase string `json:"requeuePhase"`
-	// StartedAt contain the time of the last restart of the dogu.
+	// StartedAt contains the time of the last restart of the dogu.
 	StartedAt metav1.Time `json:"startedAt,omitempty"`
 	// Health describes the health status of the dogu
-	// Deprecated, should be removed at next major update
+	// Deprecated, should be removed at next major update // TODO Convert this to condition?
 	Health HealthStatus `json:"health,omitempty"`
-	// InstalledVersion of the dogu (e.g. 2.4.48-3)
+	// InstalledVersion of the dogu chart (e.g. 2.4.48)
 	InstalledVersion string `json:"installedVersion,omitempty"`
+	// AppVersion of the dogu chart (e.g. 4.2.1)
+	AppVersion string `json:"appVersion,omitempty"`
 	// Stopped shows if the dogu has been stopped or not.
 	Stopped bool `json:"stopped,omitempty"`
 	// ExportMode shows if the export mode of the dogu is currently active.
 	ExportMode bool `json:"exportMode,omitempty"`
 	// DataVolumeSize shows the current size of the mounted data volume
+	// Deprecated, replaced by volumes and should be removed at the next major update.
 	DataVolumeSize *resource.Quantity `json:"dataVolumeSize,omitempty"`
 	// a list of conditions TRUE|FALSE
 	// e.g. MeetsMinimumDataVolumeSize -> True if status.dataVolumeSize >= spec.minDataVolumeSize
@@ -225,8 +252,10 @@ const (
 )
 
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Spec-Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu"
+// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.strategy",description="The deployment strategy used for this dogu"
 // +kubebuilder:printcolumn:name="Installed Version",type="string",JSONPath=".status.installedVersion",description="The current version of the dogu"
 // +kubebuilder:printcolumn:name="Health",type="string",JSONPath=".status.health",description="The current health state of the dogu"
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.status",description="The current status of the dogu"
@@ -244,18 +273,6 @@ type Dogu struct {
 	Status DoguStatus `json:"status,omitempty"`
 }
 
-func (d *Dogu) isV2() bool {
-	if d == nil || d.Annotations == nil {
-		return true
-	}
-
-	if doguApiVersion, found := d.Annotations[doguApiVersionAnnotationKey]; found {
-		return v3beta1.DoguApiVersion(doguApiVersion) == v3beta1.DoguApiVersionV2
-	}
-
-	return true
-}
-
 func (d *Dogu) GetConditions() []metav1.Condition {
 	return d.Status.Conditions
 }
@@ -266,7 +283,7 @@ func (d *Dogu) SetConditions(c []metav1.Condition) {
 
 // GetSimpleDoguName returns the name of the dogu as a dogu.SimpleName.
 func (d *Dogu) GetSimpleDoguName() cescommons.SimpleName {
-	return cescommons.SimpleName(d.Name)
+	return cescommons.SimpleName(d.Spec.Name)
 }
 
 // GetSimpleNameVersion returns the dogu's dogu.SimpleNameVersion.
@@ -277,222 +294,6 @@ func (d *Dogu) GetSimpleNameVersion() (cescommons.SimpleNameVersion, error) {
 	}
 
 	return cescommons.NewSimpleNameVersion(d.GetSimpleDoguName(), version), nil
-}
-
-// GetDataVolumeName returns the data volume name for the dogu resource for volumes with backup
-func (d *Dogu) GetDataVolumeName() (string, error) {
-	if !d.isV2() {
-		return "", errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetDataVolumeName"))
-	}
-	return d.Name + "-data", nil
-}
-
-// GetEphemeralDataVolumeName returns the data volume name for the dogu resource for volumes without backup
-func (d *Dogu) GetEphemeralDataVolumeName() (string, error) {
-	if !d.isV2() {
-		return "", errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetEphemeralDataVolumeName"))
-	}
-	return d.Name + "-ephemeral", nil
-}
-
-// GetPrivateKeySecretName returns the name of the dogus secret resource.
-func (d *Dogu) GetPrivateKeySecretName() (string, error) {
-	if !d.isV2() {
-		return "", errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetPrivateKeySecretName"))
-	}
-	return d.Name + "-private", nil
-}
-
-// GetObjectKey returns the object key with the actual name and namespace from the dogu resource
-func (d *Dogu) GetObjectKey() client.ObjectKey {
-	return client.ObjectKey{
-		Namespace: d.Namespace,
-		Name:      d.Name,
-	}
-}
-
-// GetDevelopmentDoguMapKey returns the object key for the custom dogu descriptor with the actual name and namespace
-// from the dogu resource.
-func (d *Dogu) GetDevelopmentDoguMapKey() client.ObjectKey {
-	// TODO This could still be valid for v3
-	return client.ObjectKey{
-		Namespace: d.Namespace,
-		Name:      d.Name + "-descriptor",
-	}
-}
-
-// GetSecretObjectKey returns the object key for the config map containing values that should be encrypted for the dogu
-func (d *Dogu) GetSecretObjectKey() (client.ObjectKey, error) {
-	if !d.isV2() {
-		return client.ObjectKey{}, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetSecretObjectKey"))
-	}
-	return client.ObjectKey{
-		Namespace: d.Namespace,
-		Name:      d.Name + "-secrets",
-	}, nil
-}
-
-// GetPrivateKeyObjectKey returns the object key for the secret containing the private key for the dogu.
-func (d *Dogu) GetPrivateKeyObjectKey() (client.ObjectKey, error) {
-	secretName, err := d.GetPrivateKeySecretName()
-	if err != nil {
-		return client.ObjectKey{}, err
-	}
-
-	return client.ObjectKey{
-		Name:      secretName,
-		Namespace: d.Namespace,
-	}, nil
-}
-
-// GetObjectMeta return the object meta with the actual name and namespace from the dogu resource
-func (d *Dogu) GetObjectMeta() *metav1.ObjectMeta {
-	return &metav1.ObjectMeta{
-		Namespace: d.Namespace,
-		Name:      d.Name,
-	}
-}
-
-// Update updates the dogu's status property in the cluster state.
-func (d *Dogu) Update(ctx context.Context, client client.Client) error {
-	updateError := client.Status().Update(ctx, d)
-	if updateError != nil {
-		return fmt.Errorf("failed to update dogu status: %w", updateError)
-	}
-
-	return nil
-}
-
-// GetPodLabels returns labels that select a pod being associated with this dogu.
-func (d *Dogu) GetPodLabels() CesMatchingLabels {
-	return map[string]string{
-		DoguLabelName:    d.Name,
-		DoguLabelVersion: d.Spec.Version,
-	}
-}
-
-func (d *Dogu) GetPodLabelsWithStatusVersion() CesMatchingLabels {
-	return map[string]string{
-		DoguLabelName:    d.Name,
-		DoguLabelVersion: d.Status.InstalledVersion,
-	}
-}
-
-// GetDoguNameLabel returns labels that select any resource being associated with this dogu.
-func (d *Dogu) GetDoguNameLabel() CesMatchingLabels {
-	return map[string]string{
-		DoguLabelName: d.Name,
-	}
-}
-
-// GetPod returns a pod for this dogu. An error is returned if either no pod or more than one pod is found.
-func (d *Dogu) GetPod(ctx context.Context, cli client.Client) (*corev1.Pod, error) {
-	if !d.isV2() {
-		return nil, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetPod"))
-	}
-	labels := d.GetPodLabels()
-	return GetPodForLabels(ctx, cli, labels)
-}
-
-// GetDataPVC returns the data pvc for this dogu.
-func (d *Dogu) GetDataPVC(ctx context.Context, cli client.Client) (*corev1.PersistentVolumeClaim, error) {
-	if !d.isV2() {
-		return nil, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetDataPVC"))
-	}
-	pvc := &corev1.PersistentVolumeClaim{}
-	err := cli.Get(ctx, d.GetObjectKey(), pvc)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get data pvc for dogu %s: %w", d.Name, err)
-	}
-
-	return pvc, nil
-}
-
-// GetDeployment returns the deployment for this dogu.
-func (d *Dogu) GetDeployment(ctx context.Context, cli client.Client) (*appsv1.Deployment, error) {
-	if !d.isV2() {
-		return nil, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetDeployment"))
-	}
-	deploy := &appsv1.Deployment{}
-	err := cli.Get(ctx, d.GetObjectKey(), deploy)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get deployment for dogu %s: %w", d.Name, err)
-	}
-
-	return deploy, nil
-}
-
-// GetMinDataVolumeSize returns the dataVolumeSize of the dogu. If no size is set the default size will be returned.
-func (d *Dogu) GetMinDataVolumeSize() (resource.Quantity, error) {
-	if !d.isV2() {
-		return resource.Quantity{}, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetMinDataVolumeSize"))
-	}
-	doguTargetDataVolumeSize := resource.MustParse(DefaultVolumeSize)
-	if !d.Spec.Resources.MinDataVolumeSize.IsZero() {
-		doguTargetDataVolumeSize = d.Spec.Resources.MinDataVolumeSize
-	} else {
-		// as long as the deprecated field is still present:
-		if d.Spec.Resources.DataVolumeSize != "" {
-			var err error
-			doguTargetDataVolumeSize, err = resource.ParseQuantity(d.Spec.Resources.DataVolumeSize)
-			if err != nil {
-				return resource.Quantity{}, err
-			}
-		}
-	}
-	return doguTargetDataVolumeSize, nil
-}
-
-// GetPrivateKeySecret returns the private key secret for this dogu.
-func (d *Dogu) GetPrivateKeySecret(ctx context.Context, cli client.Client) (*corev1.Secret, error) {
-	secret := &corev1.Secret{}
-	key, err := d.GetPrivateKeyObjectKey()
-	if err != nil {
-		return nil, err
-	}
-
-	err = cli.Get(ctx, key, secret)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get private key secret for dogu %s: %w", d.Name, err)
-	}
-
-	return secret, nil
-}
-
-// ValidateSecurity checks the dogu's Security section for configuration errors.
-func (d *Dogu) ValidateSecurity() error {
-	if !d.isV2() {
-		return errors.New(fmt.Sprintf(onlyV2SupportedFmt, "ValidateSecurity"))
-	}
-	var errs []error
-	for _, value := range d.Spec.Security.Capabilities.Add {
-		if value == core.All {
-			continue
-		}
-
-		if !slices.Contains(core.AllCapabilities, value) {
-			err := fmt.Errorf("%s is not a valid capability to be added", value)
-			errs = append(errs, err)
-		}
-	}
-
-	for _, value := range d.Spec.Security.Capabilities.Drop {
-		if value == core.All {
-			continue
-		}
-
-		if !slices.Contains(core.AllCapabilities, value) {
-			err := fmt.Errorf("%s is not a valid capability to be dropped", value)
-			errs = append(errs, err)
-		}
-	}
-
-	err := errors.Join(errs...)
-	if err != nil {
-		return fmt.Errorf("dogu resource %s:%s contains at least one invalid security field: %w", d.Spec.Name, d.Spec.Version, err)
-	}
-
-	return nil
 }
 
 // +kubebuilder:object:root=true
@@ -506,40 +307,4 @@ type DoguList struct {
 
 func init() {
 	SchemeBuilder.Register(&Dogu{}, &DoguList{})
-}
-
-// DevelopmentDoguMap is a config map that is especially used to when developing a dogu. The map contains a custom
-// dogu.json in the data filed with the "dogu.json" identifier.
-type DevelopmentDoguMap corev1.ConfigMap
-
-// DeleteFromCluster deletes this development config map from the cluster.
-func (ddm *DevelopmentDoguMap) DeleteFromCluster(ctx context.Context, client client.Client) error {
-	err := client.Delete(ctx, ddm.ToConfigMap())
-	if err != nil {
-		return fmt.Errorf("failed to delete custom dogu development map %s: %w", ddm.Name, err)
-	}
-
-	return nil
-}
-
-// ToConfigMap returns the development dogu map as config map pointer.
-func (ddm *DevelopmentDoguMap) ToConfigMap() *corev1.ConfigMap {
-	return new(corev1.ConfigMap(*ddm))
-}
-
-// CesMatchingLabels provides a convenient way to handle multiple labels for resource selection.
-type CesMatchingLabels client.MatchingLabels
-
-// Add takes the currently existing labels from this object and returns a sum of all provided labels as a new object.
-func (cml CesMatchingLabels) Add(moreLabels CesMatchingLabels) CesMatchingLabels {
-	result := CesMatchingLabels{}
-	for key, value := range cml {
-		result[key] = value
-	}
-
-	for key, value := range moreLabels {
-		result[key] = value
-	}
-
-	return result
 }
