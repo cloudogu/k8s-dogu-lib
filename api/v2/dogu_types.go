@@ -275,7 +275,7 @@ func (d *Dogu) GetSimpleNameVersion() (cescommons.SimpleNameVersion, error) {
 // GetDataVolumeName returns the data volume name for the dogu resource for volumes with backup
 func (d *Dogu) GetDataVolumeName() (string, error) {
 	if !d.isV2() {
-		return "", errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetDataVolumeName"))
+		return "", fmt.Errorf(onlyV2SupportedFmt, "GetDataVolumeName")
 	}
 	return d.Name + "-data", nil
 }
@@ -283,7 +283,7 @@ func (d *Dogu) GetDataVolumeName() (string, error) {
 // GetEphemeralDataVolumeName returns the data volume name for the dogu resource for volumes without backup
 func (d *Dogu) GetEphemeralDataVolumeName() (string, error) {
 	if !d.isV2() {
-		return "", errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetEphemeralDataVolumeName"))
+		return "", fmt.Errorf(onlyV2SupportedFmt, "GetEphemeralDataVolumeName")
 	}
 	return d.Name + "-ephemeral", nil
 }
@@ -291,7 +291,7 @@ func (d *Dogu) GetEphemeralDataVolumeName() (string, error) {
 // GetPrivateKeySecretName returns the name of the dogus secret resource.
 func (d *Dogu) GetPrivateKeySecretName() (string, error) {
 	if !d.isV2() {
-		return "", errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetPrivateKeySecretName"))
+		return "", fmt.Errorf(onlyV2SupportedFmt, "GetPrivateKeySecretName")
 	}
 	return d.Name + "-private", nil
 }
@@ -317,7 +317,7 @@ func (d *Dogu) GetDevelopmentDoguMapKey() client.ObjectKey {
 // GetSecretObjectKey returns the object key for the config map containing values that should be encrypted for the dogu
 func (d *Dogu) GetSecretObjectKey() (client.ObjectKey, error) {
 	if !d.isV2() {
-		return client.ObjectKey{}, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetSecretObjectKey"))
+		return client.ObjectKey{}, fmt.Errorf(onlyV2SupportedFmt, "GetSecretObjectKey")
 	}
 	return client.ObjectKey{
 		Namespace: d.Namespace,
@@ -381,7 +381,7 @@ func (d *Dogu) GetDoguNameLabel() CesMatchingLabels {
 // GetPod returns a pod for this dogu. An error is returned if either no pod or more than one pod is found.
 func (d *Dogu) GetPod(ctx context.Context, cli client.Client) (*corev1.Pod, error) {
 	if !d.isV2() {
-		return nil, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetPod"))
+		return nil, fmt.Errorf(onlyV2SupportedFmt, "GetPod")
 	}
 	labels := d.GetPodLabels()
 	return GetPodForLabels(ctx, cli, labels)
@@ -390,7 +390,7 @@ func (d *Dogu) GetPod(ctx context.Context, cli client.Client) (*corev1.Pod, erro
 // GetDataPVC returns the data pvc for this dogu.
 func (d *Dogu) GetDataPVC(ctx context.Context, cli client.Client) (*corev1.PersistentVolumeClaim, error) {
 	if !d.isV2() {
-		return nil, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetDataPVC"))
+		return nil, fmt.Errorf(onlyV2SupportedFmt, "GetDataPVC")
 	}
 	pvc := &corev1.PersistentVolumeClaim{}
 	err := cli.Get(ctx, d.GetObjectKey(), pvc)
@@ -404,7 +404,7 @@ func (d *Dogu) GetDataPVC(ctx context.Context, cli client.Client) (*corev1.Persi
 // GetDeployment returns the deployment for this dogu.
 func (d *Dogu) GetDeployment(ctx context.Context, cli client.Client) (*appsv1.Deployment, error) {
 	if !d.isV2() {
-		return nil, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetDeployment"))
+		return nil, fmt.Errorf(onlyV2SupportedFmt, "GetDeployment")
 	}
 	deploy := &appsv1.Deployment{}
 	err := cli.Get(ctx, d.GetObjectKey(), deploy)
@@ -418,7 +418,7 @@ func (d *Dogu) GetDeployment(ctx context.Context, cli client.Client) (*appsv1.De
 // GetMinDataVolumeSize returns the dataVolumeSize of the dogu. If no size is set the default size will be returned.
 func (d *Dogu) GetMinDataVolumeSize() (resource.Quantity, error) {
 	if !d.isV2() {
-		return resource.Quantity{}, errors.New(fmt.Sprintf(onlyV2SupportedFmt, "GetMinDataVolumeSize"))
+		return resource.Quantity{}, fmt.Errorf(onlyV2SupportedFmt, "GetMinDataVolumeSize")
 	}
 	doguTargetDataVolumeSize := resource.MustParse(DefaultVolumeSize)
 	if !d.Spec.Resources.MinDataVolumeSize.IsZero() {
@@ -455,7 +455,7 @@ func (d *Dogu) GetPrivateKeySecret(ctx context.Context, cli client.Client) (*cor
 // ValidateSecurity checks the dogu's Security section for configuration errors.
 func (d *Dogu) ValidateSecurity() error {
 	if !d.isV2() {
-		return errors.New(fmt.Sprintf(onlyV2SupportedFmt, "ValidateSecurity"))
+		return fmt.Errorf(onlyV2SupportedFmt, "ValidateSecurity")
 	}
 	var errs []error
 	for _, value := range d.Spec.Security.Capabilities.Add {

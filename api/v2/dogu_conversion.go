@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"errors"
 	"fmt"
 	"maps"
 	"slices"
@@ -37,7 +36,7 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 	dst.ObjectMeta = *d.ObjectMeta.DeepCopy()
 
 	if strings.Count(d.Spec.Name, "/") != 1 {
-		return errors.New(fmt.Sprintf("v2 dogu name %q should only contain one namespace delimiter %q", d.Spec.Name, doguNamespaceDelimiter))
+		return fmt.Errorf("v2 dogu name %q should only contain one namespace delimiter %q", d.Spec.Name, doguNamespaceDelimiter)
 	}
 
 	doguNamespaceSplit := strings.Split(d.Spec.Name, doguNamespaceDelimiter)
