@@ -242,6 +242,7 @@ const (
 	ConditionPauseReconciliation = "pauseReconciliation"
 )
 
+// +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
 // +kubebuilder:subresource:status

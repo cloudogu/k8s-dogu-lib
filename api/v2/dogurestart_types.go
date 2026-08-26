@@ -51,6 +51,7 @@ const (
 	RestartStatusPhaseFailedStart   RestartStatusPhase = "start failed"
 )
 
+// +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName="dr"

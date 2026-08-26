@@ -216,6 +216,7 @@ const (
 	ConditionPauseReconciliation = "pauseReconciliation"
 )
 
+// +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Spec-Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu"
