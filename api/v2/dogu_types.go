@@ -2,7 +2,6 @@ package v2
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"slices"
@@ -21,13 +20,6 @@ import (
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// This embed provides the crd for other applications. They can import this package and use the yaml file
-// for the CRD in e.g. integration tests. Otherwise, this file would not be present in the golang vendor directory.
-// The file gets refreshed by copying from controller-gen by the "crd-helm-generate/crd-copy-for-go-embedding" make target.
-//
-//go:embed k8s.cloudogu.com_dogus.yaml
-var _ embed.FS
 
 // interface constraints
 var _ conditions.Getter = &Dogu{}
