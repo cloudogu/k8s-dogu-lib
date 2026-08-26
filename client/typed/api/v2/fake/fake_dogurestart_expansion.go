@@ -1,6 +1,6 @@
 // Client-gen DOESN'T generate this. YOU CAN EDIT THIS FILE
 
-package v2
+package fake
 
 import (
 	"context"
@@ -10,14 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// DoguRestartExpansion extends the DoguRestartInterface
-type DoguRestartExpansion interface {
-	UpdateSpecWithRetry(ctx context.Context, doguRestart *apiv2.DoguRestart, modifySpecFn func(spec apiv2.DoguRestartSpec) apiv2.DoguRestartSpec, opts metav1.UpdateOptions) (result *apiv2.DoguRestart, err error)
-	UpdateStatusWithRetry(ctx context.Context, doguRestart *apiv2.DoguRestart, modifyStatusFn func(apiv2.DoguRestartStatus) apiv2.DoguRestartStatus, opts metav1.UpdateOptions) (result *apiv2.DoguRestart, err error)
-}
-
-// UpdateSpecWithRetry updates the spec of the resource, retrying if a conflict error arises.
-func (d *doguRestarts) UpdateSpecWithRetry(ctx context.Context, doguRestart *apiv2.DoguRestart, modifySpecFn func(spec apiv2.DoguRestartSpec) apiv2.DoguRestartSpec, opts metav1.UpdateOptions) (result *apiv2.DoguRestart, err error) {
+func (d *fakeDoguRestarts) UpdateSpecWithRetry(ctx context.Context, doguRestart *apiv2.DoguRestart, modifySpecFn func(spec apiv2.DoguRestartSpec) apiv2.DoguRestartSpec, opts metav1.UpdateOptions) (result *apiv2.DoguRestart, err error) {
 	firstTry := true
 
 	var currentObj *apiv2.DoguRestart
@@ -43,8 +36,7 @@ func (d *doguRestarts) UpdateSpecWithRetry(ctx context.Context, doguRestart *api
 	return currentObj, nil
 }
 
-// UpdateStatusWithRetry updates the status of the resource, retrying if a conflict error arises.
-func (d *doguRestarts) UpdateStatusWithRetry(ctx context.Context, doguRestart *apiv2.DoguRestart, modifyStatusFn func(apiv2.DoguRestartStatus) apiv2.DoguRestartStatus, opts metav1.UpdateOptions) (result *apiv2.DoguRestart, err error) {
+func (d *fakeDoguRestarts) UpdateStatusWithRetry(ctx context.Context, doguRestart *apiv2.DoguRestart, modifyStatusFn func(apiv2.DoguRestartStatus) apiv2.DoguRestartStatus, opts metav1.UpdateOptions) (result *apiv2.DoguRestart, err error) {
 	firstTry := true
 
 	var currentObj *apiv2.DoguRestart
