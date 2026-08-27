@@ -244,7 +244,6 @@ const (
 
 // +genclient
 // +kubebuilder:object:root=true
-// +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Spec-Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu"
 // +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.strategy",description="The deployment strategy used for this dogu"
