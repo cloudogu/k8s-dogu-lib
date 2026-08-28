@@ -277,7 +277,10 @@ func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]strin
 		Stopped:          s.Stopped,
 		ExportMode:       s.ExportMode,
 		DataVolumeSize:   clonePtr(s.DataVolumeSize),
-		Conditions:       slices.Clone(s.Conditions),
+		// We can clone all conditions because the structure is the same and equal conditions in v2 and v3beta1 are semantically the same.
+		// The reasons change in healthy and ready condition. We have to check if other components rely on them or just on the status.
+		// If they rely on the reason, v2 clients will fail if a dogu are migrated. TODO
+		Conditions: slices.Clone(s.Conditions),
 	}
 
 	if s.AppVersion != "" {

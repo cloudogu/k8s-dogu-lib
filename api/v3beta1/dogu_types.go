@@ -235,11 +235,36 @@ const (
 	DoguStatusStopping           = "stopping"
 	DoguStatusChangingExportMode = "changing export-mode"
 	DoguStatusChangingDataMounts = "change data mounts"
-	ConditionReady               = "ready"
-	ConditionHealthy             = "healthy"
-	ConditionSupportMode         = "supportMode"
-	ConditionMeetsMinVolumeSize  = "meetsMinVolumeSize"
-	ConditionPauseReconciliation = "pauseReconciliation"
+)
+
+// Conditions present in v2 and v3beta1
+const (
+	// ConditionReady
+	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting
+	// Reasons v2: ReconcileSuccess, ReconcileFail, HasToReconcile
+	ConditionReady = "ready"
+	// ConditionHealthy
+	// Reasons v3beta1: Stopped, WorkloadsNotReady
+	// Reasons v2: StoppingOperator, Deleting, DoguIsNotHealthy, DoguIsHealthy, Upgrading
+	ConditionHealthy             = "healthy"             // Needs to be translated
+	ConditionPauseReconciliation = "pauseReconciliation" // Same condition with equal reasons
+)
+
+const (
+	// Deprecated: This condition is only used by the "legacy" deployment strategy.
+	ConditionSupportMode = "supportMode"
+	// Deprecated: This condition is only used by the "legacy" deployment strategy.
+	ConditionMeetsMinVolumeSize = "meetsMinVolumeSize"
+)
+
+// New conditions
+const (
+	ConditionStopped                 = "stopped"
+	ConditionPausedValid             = "valid"
+	ConditionChartAvailable          = "chartAvailable"
+	ConditionUpdatePending           = "updatePending"
+	ConditionSchemaValidationSkipped = "schemaValidationSkipped"
+	ConditionExportModeActive        = "exportModeActive"
 )
 
 // +genclient

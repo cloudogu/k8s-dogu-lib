@@ -82,6 +82,55 @@ func newFullV2TestDogu() *Dogu {
 	}
 }
 
+func newCondition(ctype string, status metav1.ConditionStatus, reason, message string, lastTransitionTime metav1.Time, observedGeneration int64) metav1.Condition {
+	return metav1.Condition{
+		Type:               ctype,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		LastTransitionTime: lastTransitionTime,
+		ObservedGeneration: observedGeneration,
+	}
+}
+
+func newTestConditions() []metav1.Condition {
+	testTime := metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC))
+	observingGeneration := int64(1)
+
+	return []metav1.Condition{
+		newCondition(v3beta1.ConditionReady, metav1.ConditionFalse, "Installing", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionHealthy, metav1.ConditionFalse, "WorkloadsNotReady", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionSchemaValidationSkipped, metav1.ConditionFalse, "SchemaValidationEnabled", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionPausedValid, metav1.ConditionFalse, "SchemaInvalid", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionStopped, metav1.ConditionTrue, "Stopped", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionExportModeActive, metav1.ConditionFalse, "NotActive", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionPauseReconciliation, metav1.ConditionTrue, "ReconiliationPaused", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionChartAvailable, metav1.ConditionFalse, "ChartNotFound", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionUpdatePending, metav1.ConditionTrue, "Stopped", "...", testTime, observingGeneration),
+	}
+}
+
+func newV3beta1TestDogu() *v3beta1.Dogu {
+	return &v3beta1.Dogu{
+		ObjectMeta: metav1.ObjectMeta{Name: "dogu", Namespace: "ecosystem"},
+		Spec: v3beta1.DoguSpec{
+			Name:           "postgresql",
+			DoguNamespace:  "official",
+			Version:        "1.2.3-4",
+			DoguApiVersion: v3beta1.DoguApiVersionV3,
+			Values:         runtime.RawExtension{Raw: []byte(`{"replicas":3}`)},
+		},
+		Status: v3beta1.DoguStatus{
+			AppVersion:       "6.7",
+			StartedAt:        metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
+			Conditions:       newTestConditions(),
+			InstalledVersion: "1.2.3-4",
+			Stopped:          true,
+			ExportMode:       false,
+		},
+	}
+}
+
 func TestDogu_ConvertTo_ConvertFrom_V2NativeRoundTripIsLossless(t *testing.T) {
 	src := newFullV2TestDogu()
 
@@ -105,19 +154,7 @@ func TestDogu_ConvertTo_ConvertFrom_V2NativeRoundTripIsLossless(t *testing.T) {
 }
 
 func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
-	hub := &v3beta1.Dogu{
-		ObjectMeta: metav1.ObjectMeta{Name: "dogu", Namespace: "ecosystem"},
-		Spec: v3beta1.DoguSpec{
-			Name:           "postgresql",
-			DoguNamespace:  "official",
-			Version:        "1.2.3-4",
-			DoguApiVersion: v3beta1.DoguApiVersionV3,
-			Values:         runtime.RawExtension{Raw: []byte(`{"replicas":3}`)},
-		},
-		Status: v3beta1.DoguStatus{
-			AppVersion: "1.2.3-4",
-		},
-	}
+	hub := newV3beta1TestDogu()
 
 	var v2View Dogu
 	require.NoError(t, v2View.ConvertFrom(hub))
@@ -127,7 +164,7 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	require.Contains(t, v2View.Annotations, statusAppVersionAnnotationKey)
 	assert.Equal(t, string(v3beta1.DoguApiVersionV3), v2View.Annotations[doguApiVersionAnnotationKey])
 	assert.Equal(t, `{"replicas":3}`, v2View.Annotations[valuesAnnotationKey])
-	assert.Equal(t, "1.2.3-4", v2View.Annotations[statusAppVersionAnnotationKey])
+	assert.Equal(t, "6.7", v2View.Annotations[statusAppVersionAnnotationKey])
 	assert.Equal(t, "official/postgresql", v2View.Spec.Name)
 
 	var restoredHub v3beta1.Dogu
@@ -135,9 +172,10 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 
 	assert.Equal(t, v3beta1.DoguApiVersionV3, restoredHub.Spec.DoguApiVersion)
 	assert.Equal(t, `{"replicas":3}`, string(restoredHub.Spec.Values.Raw))
-	assert.Equal(t, "1.2.3-4", restoredHub.Status.AppVersion)
+	assert.Equal(t, "6.7", restoredHub.Status.AppVersion)
 	assert.Equal(t, "official", restoredHub.Spec.DoguNamespace)
 	assert.Equal(t, "postgresql", restoredHub.Spec.Name)
+	assert.Equal(t, hub.Status.Conditions, restoredHub.Status.Conditions)
 	assert.NotContains(t, restoredHub.Annotations, doguApiVersionAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, valuesAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, statusAppVersionAnnotationKey)
