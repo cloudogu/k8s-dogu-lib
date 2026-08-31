@@ -7,4 +7,6 @@ var _ conversion.Hub = &Dogu{}
 
 // Hub marks Dogu as the conversion hub for the k8s.cloudogu.com Dogu kind. Every other served
 // API version of Dogu (e.g. v2) implements conversion.Convertible and converts to/from this type.
-func (*Dogu) Hub() {}
+func (*Dogu) Hub() {
+	// Intentionally left blank
+}
