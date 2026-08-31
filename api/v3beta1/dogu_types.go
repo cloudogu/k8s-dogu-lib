@@ -198,7 +198,7 @@ type DoguStatus struct {
 	// StartedAt contains the time of the last restart of the dogu.
 	StartedAt metav1.Time `json:"startedAt,omitempty"`
 	// Health describes the health status of the dogu
-	// Deprecated, should be removed at next major update // TODO Convert this to condition?
+	// Deprecated, should be removed at next major update
 	Health HealthStatus `json:"health,omitempty"`
 	// InstalledVersion of the dogu chart (e.g. 2.4.48)
 	InstalledVersion string `json:"installedVersion,omitempty"`
