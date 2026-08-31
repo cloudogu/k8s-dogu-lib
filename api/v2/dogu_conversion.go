@@ -112,7 +112,6 @@ func (d *Dogu) ConvertFrom(srcRaw conversion.Hub) error {
 		}
 		d.Annotations[doguApiVersionAnnotationKey] = string(src.Spec.DoguApiVersion)
 	}
-	// TODO Check this values as annotation value
 	if len(src.Spec.Values.Raw) > 0 {
 		if d.Annotations == nil {
 			d.Annotations = map[string]string{}
