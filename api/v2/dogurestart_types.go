@@ -3,8 +3,6 @@ This file was generated with "make generate-deepcopy".
 */
 package v2
 
-// TODO Dogu-Operator has to check if the dogu to restart is v2 or other
-
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
