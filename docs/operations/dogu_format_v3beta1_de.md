@@ -1,35 +1,40 @@
-# Dogu format
+# Dogu format (v3beta1)
 
-> Eine `v3beta1`-Version der Dogu-CR ist als Beta-Vorschau verfügbar, siehe
-> [Dogu format (v3beta1)](dogu_format_v3beta1_de.md).
+> **Beta**: `k8s.cloudogu.com/v3beta1` ist eine Vorschau auf die nächste Generation der Dogu-CR.
+> Sie wird parallel zu `k8s.cloudogu.com/v2` (aktuelle Storage-Version) ausgeliefert, der API-Server
+> konvertiert dabei transparent zwischen beiden Versionen, sodass bestehende `v2`-Dogu-CRs
+> unverändert weiterlaufen. Wird `doguApiVersion: v3` gesetzt, wird das Dogu für die kommende
+> Helm-basierte Deployment-Strategie vorgesehen, die vom Dogu-Operator noch nicht vollständig
+> unterstützt wird. Bis dahin sollten Dogu-CRs für den produktiven Einsatz weiterhin wie in
+> [Dogu format](dogu_format_de.md) (`v2`) beschrieben angelegt werden.
 
-Die Dogu-CR kann genutzt werden, um Cloudogu-Dogus in einem Kubernetescluster mit dem Dogu-Operator zu installieren.
-Es können verschiedene Einstellungen getroffen werden, die zusätzlich zur dogu.json und der Dogu-Konfiguration
-ausgewertet werden.
-
-Folgend werden alle Felder einer Dogu-CR beschrieben und mit Beispielen veranschaulicht.
+Folgend werden alle Felder einer `v3beta1`-Dogu-CR beschrieben und mit Beispielen veranschaulicht.
+Nur die Felder, die neu sind oder sich gegenüber `v2` anders verhalten, werden ausführlich
+beschrieben; für alle übrigen Felder siehe [Dogu format](dogu_format_de.md).
 
 ## Komplettes Beispiel
 
 ```yaml
-apiVersion: k8s.cloudogu.com/v2
+apiVersion: k8s.cloudogu.com/v3beta1
 kind: Dogu
 metadata:
-  name: postfix
+  name: usermgt
 spec:
-  name: official/usermgt
+  name: usermgt
+  doguNamespace: official
   version: 1.20.0-5
+  doguApiVersion: v2
   additionalIngressAnnotations: # deprecated
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-  additionalMounts:
+  additionalMounts: # deprecated
     - sourceType: ConfigMap
       name: my-configmap
       volume: importHistory
       subfolder: "my-configmap-subfolder"
   exportMode: false
-  resources:
+  resources: # deprecated
     minDataVolumeSize: 2Gi
-  security:
+  security: # deprecated
     appArmorProfile:
       localhostProfile: "localhost-profile"
       type: Localhost
@@ -48,7 +53,8 @@ spec:
     seccompProfile:
       type: RuntimeDefault
   stopped: false
-  supportMode: false
+  pauseReconciliation: false
+  supportMode: false # deprecated
   upgradeConfig:
     allowNamespaceSwitch: false
     forceUpgrade: false
@@ -58,8 +64,17 @@ spec:
 
 * Pflichtfeld
 * Datentyp: string
-* Inhalt: Gibt den Namen einschließlich des Namespace des Dogu an.
-* Beispiel: `"name": "official/usermgt"`
+* Inhalt: Gibt den Namen des Dogus ohne dessen Namespace an. In `v2` war dies zusammen mit dem
+  Namespace ein einziger String (`namespace/name`); in `v3beta1` sind beide Felder getrennt.
+* Beispiel: `"name": "usermgt"`
+
+## DoguNamespace
+
+* Pflichtfeld
+* Datentyp: string
+* Inhalt: Gibt den Namespace des Dogus an (der Teil vor dem Schrägstrich im `name`-Feld von `v2`,
+  z. B. `official`).
+* Beispiel: `"doguNamespace": "official"`
 
 ## Version
 
@@ -68,9 +83,38 @@ spec:
 * Inhalt: Gibt die Version des Dogu an.
 * Beispiel: `"version": "1.20.0-5"`
 
+## DoguApiVersion
+
+* Optional
+* Datentyp: Enum <v2; v3>
+* Standardwert: `v2`
+* Inhalt: Legt fest, welche interne Deployment-Routine des Dogu-Operator-Reconcilers für dieses
+  Dogu verwendet wird.
+    - `v2` - erzeugt Kubernetes-Ressourcen ad-hoc aus den Attributen des Dogus, genau wie es
+      `k8s.cloudogu.com/v2`-Dogus heute tun. `resources`, `security`, `supportMode` und
+      `additionalMounts` gelten dabei.
+    - `v3` - **wird vom Dogu-Operator noch nicht unterstützt.** Sobald verfügbar, wird das Dogu
+      damit als Helm-Release deployt und verwaltet, konfiguriert über `values` statt über
+      `resources`/`security`/`additionalMounts`.
+* Beispiel: `"doguApiVersion": "v2"`
+
+## Values
+
+* Optional
+* Datentyp: Object
+* Inhalt: Helm-`values.yaml`-Overrides für das Chart dieses Dogus. Nur relevant, wenn
+  `doguApiVersion` auf `v3` steht, sonst wird das Feld ignoriert. Die Struktur ist beliebig und
+  wird vom Chart selbst validiert, nicht von diesem Schema.
+* Beispiel:
+
+```
+values:
+  replicaCount: 2
+```
+
 ## AdditionalIngressAnnotations
 
-Das Feld ist `deprecated`.
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet.
 
 * Optional
 * Datentyp: string
@@ -84,6 +128,9 @@ additionalIngressAnnotations:
 ```
 
 ## AdditionalMounts
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet; Helm-deployte Dogus
+(`doguApiVersion: v3`) konfigurieren zusätzliche Mounts stattdessen über `values`.
 
 * Optional
 * Datentyp: Array<DataMount>
@@ -148,6 +195,9 @@ Ein DataMount kann die folgenden Felder enthalten:
 
 ## Resources
 
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet; Helm-deployte Dogus
+(`doguApiVersion: v3`) konfigurieren die Volume-Größe stattdessen über `values`.
+
 * Optional
 * Datentyp: Object
 * Inhalt: Ressourcen des Dogus (e.g. minDataVolumeSize)
@@ -170,10 +220,13 @@ resources:
 
 ## Security
 
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet; Helm-deployte Dogus
+(`doguApiVersion: v3`) konfigurieren die Container-Security stattdessen über `values`.
+
 * Optional
 * Datentyp: Object
 * Inhalt: Security überschreibt die im Dogu-Deskriptor definierten Sicherheitsrichtlinien. Diese Felder können verwendet
-  werden, um die Angriffsfläche einer Dogu weiter zu reduzieren.
+  werden, um die Angriffsfläche eines Dogu weiter zu reduzieren.
 
 Security kann die folgenden Attribute enthalten:
 
@@ -340,7 +393,18 @@ seccompProfile:
 * Inhalt: Stopped gibt an, ob das Dogu laufen soll (stopped=false) oder nicht (stopped=true).
 * Beispiel: `"stopped": true`
 
+## PauseReconciliation
+
+* Optional
+* Datentyp: boolean
+* Inhalt: PauseReconciliation gibt an, ob die Reconciliation-Schleife laufen soll
+  (pauseReconciliation=false) oder nicht (pauseReconciliation=true). Der Validierungsschritt läuft
+  unabhängig von dieser Einstellung immer weiter.
+* Beispiel: `"pauseReconciliation": true`
+
 ## SupportMode
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet.
 
 * Optional
 * Datentyp: boolean

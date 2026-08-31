@@ -1,34 +1,39 @@
-# Dogu format
+# Dogu format (v3beta1)
 
-> A `v3beta1` version of the Dogu-CR is available as a beta preview, see
-> [Dogu format (v3beta1)](dogu_format_v3beta1_en.md).
+> **Beta**: `k8s.cloudogu.com/v3beta1` is a preview of the next Dogu-CR generation. It is served
+> alongside `k8s.cloudogu.com/v2` (the current storage version) and the API server converts
+> transparently between the two, so existing `v2` Dogu-CRs keep working unchanged. Setting
+> `doguApiVersion: v3` opts a dogu into the upcoming Helm-based deployment strategy, which is not
+> yet fully supported by the dogu operator. Until that lands, create Dogu-CRs as documented in
+> [Dogu format](dogu_format_en.md) (`v2`) for production use.
 
-The Dogu-CR can be used to install Cloudogu-Dogus in a Kubernetes cluster with the dogu operator.
-Various settings can be made that are evaluated in addition to dogu.json and the dogu configuration.
+All fields of a `v3beta1` Dogu-CR are described below and illustrated with examples. Only the
+fields that are new or behave differently compared to `v2` are covered in detail; for everything
+else see [Dogu format](dogu_format_en.md).
 
-All fields of a Dogu-CR are described below and illustrated with examples.
-
-## Komplettes Beispiel
+## Complete example
 
 ```yaml
-apiVersion: k8s.cloudogu.com/v2
+apiVersion: k8s.cloudogu.com/v3beta1
 kind: Dogu
 metadata:
-  name: postfix
+  name: usermgt
 spec:
-  name: official/usermgt
+  name: usermgt
+  doguNamespace: official
   version: 1.20.0-5
+  doguApiVersion: v2
   additionalIngressAnnotations: # deprecated
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-  additionalMounts:
+  additionalMounts: # deprecated
     - sourceType: ConfigMap
       name: my-configmap
       volume: importHistory
       subfolder: "my-configmap-subfolder"
   exportMode: false
-  resources:
+  resources: # deprecated
     minDataVolumeSize: 2Gi
-  security:
+  security: # deprecated
     appArmorProfile:
       localhostProfile: "localhost-profile"
       type: Localhost
@@ -47,7 +52,8 @@ spec:
     seccompProfile:
       type: RuntimeDefault
   stopped: false
-  supportMode: false
+  pauseReconciliation: false
+  supportMode: false # deprecated
   upgradeConfig:
     allowNamespaceSwitch: false
     forceUpgrade: false
@@ -57,8 +63,17 @@ spec:
 
 * Required
 * Data type: string
-* Content: Specifies the name including the namespace of the Dogu.
-* Example: `"name": "official/usermgt"`
+* Content: Specifies the name of the Dogu without its namespace. In `v2` this was combined with
+  the namespace into a single `namespace/name` string; in `v3beta1` the two are separate fields.
+* Example: `"name": "usermgt"`
+
+## DoguNamespace
+
+* Required
+* Data type: string
+* Content: Specifies the namespace of the Dogu (the part before the slash in `v2`'s `name` field,
+  e.g. `official`).
+* Example: `"doguNamespace": "official"`
 
 ## Version
 
@@ -67,9 +82,38 @@ spec:
 * Content: Specifies the version of the Dogu.
 * Example: `"version": "1.20.0-5"`
 
+## DoguApiVersion
+
+* Optional
+* Data type: Enum <v2; v3>
+* Default: `v2`
+* Content: Tells the dogu operator's reconciler which internal deployment routine to run for this
+  dogu.
+    - `v2` - builds Kubernetes resources ad-hoc from the dogu's attributes, the same way
+      `k8s.cloudogu.com/v2` dogus are deployed today. `resources`, `security`, `supportMode` and
+      `additionalMounts` apply.
+    - `v3` - **not yet supported by the dogu operator.** Once available, this deploys and manages
+      the dogu as a Helm release, configured via `values` instead of `resources`/`security`/
+      `additionalMounts`.
+* Example: `"doguApiVersion": "v2"`
+
+## Values
+
+* Optional
+* Data type: Object
+* Content: Helm `values.yaml` overrides for this dogu's chart. Only meaningful when
+  `doguApiVersion` is `v3`; ignored otherwise. The structure is arbitrary and validated by the
+  chart itself, not by this schema.
+* Example:
+
+```
+values:
+  replicaCount: 2
+```
+
 ## AdditionalIngressAnnotations
 
-This field is `deprecated`.
+This field is `deprecated`. It is only honored for `doguApiVersion: v2`.
 
 * Optional
 * Data type: string
@@ -83,9 +127,12 @@ additionalIngressAnnotations:
 
 ## AdditionalMounts
 
+This field is `deprecated`. It is only honored for `doguApiVersion: v2`; Helm-deployed dogus
+(`doguApiVersion: v3`) configure additional mounts via `values` instead.
+
 * Optional
 * Data type: Array<DataMount>
-* Content: Data provides the possibility to mount additional data into the dogu.
+* Content: AdditionalMounts provides the possibility to mount additional data into the dogu.
 * Example:
 
 ```
@@ -146,6 +193,9 @@ A DataMount can contain the following fields:
 
 ## Resources
 
+This field is `deprecated`. It is only honored for `doguApiVersion: v2`; Helm-deployed dogus
+(`doguApiVersion: v3`) configure volume sizing via `values` instead.
+
 * Optional
 * Data type: Object
 * Content: Resources of the dogu (e.g. minDataVolumeSize)
@@ -167,6 +217,9 @@ resources:
 * Example: `"minDataVolumeSize": 2Gi`
 
 ## Security
+
+This field is `deprecated`. It is only honored for `doguApiVersion: v2`; Helm-deployed dogus
+(`doguApiVersion: v3`) configure container security via `values` instead.
 
 * Optional
 * Data type: Object
@@ -333,7 +386,18 @@ seccompProfile:
 * Content: Stopped indicates whether the dogu should be running (stopped=false) or not (stopped=true).
 * Example: `"stopped": true`
 
+## PauseReconciliation
+
+* Optional
+* Data type: boolean
+* Content: PauseReconciliation indicates whether the reconciliation loop should be running
+  (pauseReconciliation=false) or not (pauseReconciliation=true). The validation step always keeps
+  running regardless of this setting.
+* Example: `"pauseReconciliation": true`
+
 ## SupportMode
+
+This field is `deprecated`. It is only honored for `doguApiVersion: v2`.
 
 * Optional
 * Data type: boolean
@@ -359,8 +423,7 @@ upgradeConfig:
 * Optional
 * Data type: boolean
 * Content: AllowNamespaceSwitch lets a dogu switch its dogu namespace during an upgrade. The dogu must be technically
-  the
-  same dogu which did reside in a different namespace. The remote dogu's version must be equal to or greater than
+  the same dogu which did reside in a different namespace. The remote dogu's version must be equal to or greater than
   the version of the local dogu.
 
 ### ForceUpgrade
