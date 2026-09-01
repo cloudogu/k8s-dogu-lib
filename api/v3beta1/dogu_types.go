@@ -200,11 +200,6 @@ const (
 	// TODO More states? Resizing?
 )
 
-type MountRef struct {
-	Kind string `json:"kind"`
-	Name string `json:"name"`
-}
-
 type VolumeStatus struct {
 	ClaimName   string            `json:"claimName"`
 	Size        resource.Quantity `json:"size,omitempty"`
