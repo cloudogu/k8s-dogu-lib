@@ -67,10 +67,16 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 	// default must be set explicitly here.
 	dst.Spec.DoguApiVersion = v3beta1.DoguApiVersionV2
 	if doguApiVersion, foundApiVersion := d.Annotations[doguApiVersionAnnotationKey]; foundApiVersion {
+		if doguApiVersion != string(v3beta1.DoguApiVersionV2) && doguApiVersion != string(v3beta1.DoguApiVersionV3) {
+			return fmt.Errorf("doguApiVersion annotation %q is not v2 or v3", doguApiVersion)
+		}
 		dst.Spec.DoguApiVersion = v3beta1.DoguApiVersion(doguApiVersion)
 		delete(dst.Annotations, doguApiVersionAnnotationKey)
 	}
 	if values, foundValues := d.Annotations[valuesAnnotationKey]; foundValues {
+		if !isJSONObject(values) {
+			return fmt.Errorf("values annotation %q is not a valid JSON object", values)
+		}
 		dst.Spec.Values = apiextensionsv1.JSON{Raw: []byte(values)}
 		delete(dst.Annotations, valuesAnnotationKey)
 	}
@@ -90,6 +96,11 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 
 	dst.Status = convertStatusToV3beta1(d.Status, d.Annotations, dst.Annotations)
 	return nil
+}
+
+func isJSONObject(s string) bool {
+	var obj map[string]any
+	return json.Unmarshal([]byte(s), &obj) == nil
 }
 
 // ConvertFrom converts the v3beta1 hub representation into this v2 Dogu. This runs whenever a
