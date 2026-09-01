@@ -271,3 +271,51 @@ func TestDogu_ConvertTo_ShouldReturnErrorOnInvalidName(t *testing.T) {
 
 	require.ErrorContains(t, err, "v2 dogu name \"invalid/name/name\" should only contain one namespace delimiter \"/\"")
 }
+
+func TestDogu_ConvertTo_ShouldReturnErrorOnInvalidDoguApiVersionAnnotation(t *testing.T) {
+	src := &Dogu{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{doguApiVersionAnnotationKey: "invalid"},
+		},
+		Spec: DoguSpec{
+			Name: "official/postgresql",
+		},
+	}
+
+	dst := &v3beta1.Dogu{}
+	err := src.ConvertTo(dst)
+
+	require.ErrorContains(t, err, "doguApiVersion annotation \"invalid\" is not v2 or v3")
+}
+
+func TestDogu_ConvertTo_ShouldReturnErrorOnInvalidValuesAnnotation(t *testing.T) {
+	src := &Dogu{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{valuesAnnotationKey: "no: json: string : here"},
+		},
+		Spec: DoguSpec{
+			Name: "official/postgresql",
+		},
+	}
+
+	dst := &v3beta1.Dogu{}
+	err := src.ConvertTo(dst)
+
+	require.ErrorContains(t, err, "values annotation \"no: json: string : here\" is not a valid JSON object")
+}
+
+func TestDogu_ConvertTo_ShouldReturnErrorOnInvalidMappedValuesAnnotation(t *testing.T) {
+	src := &Dogu{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{mappedValuesAnnotationKey: "no: string: string : here"},
+		},
+		Spec: DoguSpec{
+			Name: "official/postgresql",
+		},
+	}
+
+	dst := &v3beta1.Dogu{}
+	err := src.ConvertTo(dst)
+
+	require.ErrorContains(t, err, "failed to unmarshal mapped values")
+}
