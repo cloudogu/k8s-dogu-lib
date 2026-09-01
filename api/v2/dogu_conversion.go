@@ -24,7 +24,7 @@ const (
 	valuesAnnotationKey               = "k8s.cloudogu.com/v3beta1-values"
 	statusAppVersionAnnotationKey     = "k8s.cloudogu.com/v3beta1-status-appVersion"
 	mappedValuesAnnotationKey         = "k8s.cloudogu.com/v3beta1-mapped-values"
-	skipSchemeValidationAnnotationKey = "k8s.cloudogu.com/v3beta1-skipped-scheme-validation"
+	skipSchemaValidationAnnotationKey = "k8s.cloudogu.com/v3beta1-skipped-schema-validation"
 	doguNamespaceDelimiter            = "/"
 )
 
@@ -89,9 +89,9 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 		delete(dst.Annotations, mappedValuesAnnotationKey)
 	}
 
-	if skipSchemeValidation, foundSkipSchemeValidation := d.Annotations[skipSchemeValidationAnnotationKey]; foundSkipSchemeValidation {
-		dst.Spec.SkipSchemaValidation = skipSchemeValidation == "true"
-		delete(dst.Annotations, skipSchemeValidationAnnotationKey)
+	if skipSchemaValidation, foundSkipSchemaValidation := d.Annotations[skipSchemaValidationAnnotationKey]; foundSkipSchemaValidation {
+		dst.Spec.SkipSchemaValidation = skipSchemaValidation == "true"
+		delete(dst.Annotations, skipSchemaValidationAnnotationKey)
 	}
 
 	dst.Status = convertStatusToV3beta1(d.Status, d.Annotations, dst.Annotations)
@@ -154,7 +154,7 @@ func (d *Dogu) ConvertFrom(srcRaw conversion.Hub) error {
 		d.Annotations[mappedValuesAnnotationKey] = string(marshal)
 	}
 	if src.Spec.SkipSchemaValidation {
-		d.Annotations[skipSchemeValidationAnnotationKey] = "true"
+		d.Annotations[skipSchemaValidationAnnotationKey] = "true"
 	}
 
 	d.Status = convertStatusFromV3beta1(src.Status, d.Annotations)

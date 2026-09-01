@@ -162,7 +162,7 @@ func TestDogu_ConvertTo_ConvertFrom_V2NativeRoundTripIsLossless(t *testing.T) {
 	assert.NotContains(t, hub.Annotations, valuesAnnotationKey)
 	assert.NotContains(t, hub.Annotations, statusAppVersionAnnotationKey)
 	assert.NotContains(t, hub.Annotations, mappedValuesAnnotationKey)
-	assert.NotContains(t, hub.Annotations, skipSchemeValidationAnnotationKey)
+	assert.NotContains(t, hub.Annotations, skipSchemaValidationAnnotationKey)
 	assert.Equal(t, "unrelated annotation", hub.Annotations["custom.example.com/note"])
 
 	var result Dogu
@@ -183,12 +183,12 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	require.Contains(t, v2View.Annotations, valuesAnnotationKey)
 	require.Contains(t, v2View.Annotations, statusAppVersionAnnotationKey)
 	require.Contains(t, v2View.Annotations, mappedValuesAnnotationKey)
-	require.Contains(t, v2View.Annotations, skipSchemeValidationAnnotationKey)
+	require.Contains(t, v2View.Annotations, skipSchemaValidationAnnotationKey)
 	assert.Equal(t, string(v3beta1.DoguApiVersionV3), v2View.Annotations[doguApiVersionAnnotationKey])
 	assert.Equal(t, `{"replicas":3}`, v2View.Annotations[valuesAnnotationKey])
 	assert.Equal(t, "6.7", v2View.Annotations[statusAppVersionAnnotationKey])
 	assert.Equal(t, `{"log-level":"info"}`, v2View.Annotations[mappedValuesAnnotationKey])
-	assert.Equal(t, "true", v2View.Annotations[skipSchemeValidationAnnotationKey])
+	assert.Equal(t, "true", v2View.Annotations[skipSchemaValidationAnnotationKey])
 	assert.Equal(t, "official/postgresql", v2View.Spec.Name)
 
 	var restoredHub v3beta1.Dogu
@@ -205,7 +205,7 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	assert.NotContains(t, restoredHub.Annotations, valuesAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, statusAppVersionAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, mappedValuesAnnotationKey)
-	assert.NotContains(t, restoredHub.Annotations, skipSchemeValidationAnnotationKey)
+	assert.NotContains(t, restoredHub.Annotations, skipSchemaValidationAnnotationKey)
 }
 
 func TestDogu_ConvertTo_DoesNotMutateSourceAnnotationsMap(t *testing.T) {
