@@ -821,7 +821,7 @@ spec:
                 health:
                   description: |-
                     Health describes the health status of the dogu
-                    Deprecated, should be removed at next major update // TODO Convert this to condition?
+                    Deprecated, should be removed at next major update
                   type: string
                 installedVersion:
                   description: InstalledVersion of the dogu chart (e.g. 2.4.48)
