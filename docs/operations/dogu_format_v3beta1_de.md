@@ -24,6 +24,8 @@ spec:
   doguNamespace: official
   version: 1.20.0-5
   doguApiVersion: v2
+  mappedValues:
+    logLevel: "debug"
   additionalIngressAnnotations: # deprecated
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
   additionalMounts: # deprecated
@@ -58,6 +60,7 @@ spec:
   upgradeConfig:
     allowNamespaceSwitch: false
     forceUpgrade: false
+  skipSchemaValidation: false
 ```
 
 ## Name
@@ -110,6 +113,19 @@ spec:
 ```
 values:
   replicaCount: 2
+```
+
+## MappedValues
+
+* Optional
+* Datentyp: Object (String-zu-String-Map)
+* Inhalt: MappedValues bildet Metadaten-Werte auf spezifische Werte des Helm-Charts ab. Damit lässt
+  sich z. B. mit einem einzigen Wert das Log-Level aller Container gleichzeitig ändern.
+* Beispiel:
+
+```
+mappedValues:
+  logLevel: "debug"
 ```
 
 ## AdditionalIngressAnnotations
@@ -439,3 +455,10 @@ upgradeConfig:
 * Datentyp: boolean
 * Inhalt: ForceUpgrade erlaubt es, die gleiche oder sogar eine niedrigere Dogu-Version zu installieren, als bereits
   installiert ist. Bitte beachten Sie, dass durch ein unsachgemäßes Dogu-Downgrade Datenverluste auftreten können.
+
+## SkipSchemaValidation
+
+* Optional
+* Datentyp: boolean
+* Inhalt: SkipSchemaValidation gibt an, ob die Schema-Validierung des Dogus übersprungen werden soll.
+* Beispiel: `"skipSchemaValidation": true`

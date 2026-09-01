@@ -23,6 +23,8 @@ spec:
   doguNamespace: official
   version: 1.20.0-5
   doguApiVersion: v2
+  mappedValues:
+    logLevel: "debug"
   additionalIngressAnnotations: # deprecated
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
   additionalMounts: # deprecated
@@ -57,6 +59,7 @@ spec:
   upgradeConfig:
     allowNamespaceSwitch: false
     forceUpgrade: false
+  skipSchemaValidation: false
 ```
 
 ## Name
@@ -109,6 +112,19 @@ spec:
 ```
 values:
   replicaCount: 2
+```
+
+## MappedValues
+
+* Optional
+* Data type: Object (string-to-string map)
+* Content: MappedValues maps metadata values to specific values from the helm chart. This is
+  typically used to change all container log levels by setting one single value.
+* Example:
+
+```
+mappedValues:
+  logLevel: "debug"
 ```
 
 ## AdditionalIngressAnnotations
@@ -432,3 +448,10 @@ upgradeConfig:
 * Data type: boolean
 * Content: ForceUpgrade allows to install the same or even lower dogu version than already is installed. Please note,
   that possible data loss may occur by inappropriate dogu downgrading.
+
+## SkipSchemaValidation
+
+* Optional
+* Data type: boolean
+* Content: SkipSchemaValidation indicates whether the dogu's schema validation should be skipped.
+* Example: `"skipSchemaValidation": true`
