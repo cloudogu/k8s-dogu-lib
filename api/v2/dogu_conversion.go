@@ -23,6 +23,7 @@ const (
 	doguApiVersionAnnotationKey       = "k8s.cloudogu.com/v3beta1-doguApiVersion"
 	valuesAnnotationKey               = "k8s.cloudogu.com/v3beta1-values"
 	statusAppVersionAnnotationKey     = "k8s.cloudogu.com/v3beta1-status-appVersion"
+	statusVolumesAnnotationKey        = "k8s.cloudogu.com/v3beta1-status-volumes"
 	mappedValuesAnnotationKey         = "k8s.cloudogu.com/v3beta1-mapped-values"
 	skipSchemaValidationAnnotationKey = "k8s.cloudogu.com/v3beta1-skipped-schema-validation"
 	doguNamespaceDelimiter            = "/"
@@ -94,8 +95,10 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 		delete(dst.Annotations, skipSchemaValidationAnnotationKey)
 	}
 
-	dst.Status = convertStatusToV3beta1(d.Status, d.Annotations, dst.Annotations)
-	return nil
+	var err error
+	dst.Status, err = convertStatusToV3beta1(d.Status, d.Annotations, dst.Annotations)
+
+	return err
 }
 
 func isJSONObject(s string) bool {
@@ -157,9 +160,10 @@ func (d *Dogu) ConvertFrom(srcRaw conversion.Hub) error {
 		d.Annotations[skipSchemaValidationAnnotationKey] = "true"
 	}
 
-	d.Status = convertStatusFromV3beta1(src.Status, d.Annotations)
+	var err error
+	d.Status, err = convertStatusFromV3beta1(src.Status, d.Annotations)
 
-	return nil
+	return err
 }
 
 func convertResourcesToV3beta1(r DoguResources) v3beta1.DoguResources {
@@ -274,7 +278,7 @@ func convertMountsFromV3beta1(mounts []v3beta1.DataMount) []DataMount {
 	return result
 }
 
-func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstAnnotations map[string]string) v3beta1.DoguStatus {
+func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstAnnotations map[string]string) (v3beta1.DoguStatus, error) {
 	status := v3beta1.DoguStatus{
 		Status:           s.Status,
 		RequeueTime:      s.RequeueTime,
@@ -293,10 +297,18 @@ func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstA
 		delete(dstAnnotations, statusAppVersionAnnotationKey)
 	}
 
-	return status
+	if volumeStatus, foundVolumeStatus := srcAnnotations[statusVolumesAnnotationKey]; foundVolumeStatus {
+		err := json.Unmarshal([]byte(volumeStatus), &status.VolumeStatus)
+		if err != nil {
+			return v3beta1.DoguStatus{}, fmt.Errorf("failed to unmarshal volume status: %w", err)
+		}
+		delete(dstAnnotations, statusVolumesAnnotationKey)
+	}
+
+	return status, nil
 }
 
-func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]string) DoguStatus {
+func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]string) (DoguStatus, error) {
 	status := DoguStatus{
 		Status:           s.Status,
 		RequeueTime:      s.RequeueTime,
@@ -313,14 +325,23 @@ func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]strin
 		Conditions: slices.Clone(s.Conditions),
 	}
 
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+
 	if s.AppVersion != "" {
-		if annotations == nil {
-			annotations = map[string]string{}
-		}
 		annotations[statusAppVersionAnnotationKey] = s.AppVersion
 	}
 
-	return status
+	if s.VolumeStatus != nil && len(s.VolumeStatus) > 0 {
+		marshal, err := json.Marshal(s.VolumeStatus)
+		if err != nil {
+			return DoguStatus{}, fmt.Errorf("failed to marshal volume status: %w", err)
+		}
+		annotations[statusVolumesAnnotationKey] = string(marshal)
+	}
+
+	return status, nil
 }
 
 // clonePtr returns a pointer to a copy of the value v points to, or nil if v is nil. It avoids

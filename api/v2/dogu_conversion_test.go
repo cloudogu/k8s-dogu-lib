@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -184,12 +185,16 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	require.Contains(t, v2View.Annotations, statusAppVersionAnnotationKey)
 	require.Contains(t, v2View.Annotations, mappedValuesAnnotationKey)
 	require.Contains(t, v2View.Annotations, skipSchemaValidationAnnotationKey)
+	require.Contains(t, v2View.Annotations, statusVolumesAnnotationKey)
 	assert.Equal(t, string(v3beta1.DoguApiVersionV3), v2View.Annotations[doguApiVersionAnnotationKey])
 	assert.Equal(t, `{"replicas":3}`, v2View.Annotations[valuesAnnotationKey])
 	assert.Equal(t, "6.7", v2View.Annotations[statusAppVersionAnnotationKey])
 	assert.Equal(t, `{"log-level":"info"}`, v2View.Annotations[mappedValuesAnnotationKey])
 	assert.Equal(t, "true", v2View.Annotations[skipSchemaValidationAnnotationKey])
 	assert.Equal(t, "official/postgresql", v2View.Spec.Name)
+	marshal, err := json.Marshal(hub.Status.VolumeStatus)
+	require.NoError(t, err)
+	assert.Equal(t, string(marshal), v2View.Annotations[statusVolumesAnnotationKey])
 
 	var restoredHub v3beta1.Dogu
 	require.NoError(t, v2View.ConvertTo(&restoredHub))
@@ -200,12 +205,14 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	assert.Equal(t, "official", restoredHub.Spec.DoguNamespace)
 	assert.Equal(t, "postgresql", restoredHub.Spec.Name)
 	assert.Equal(t, true, restoredHub.Spec.SkipSchemaValidation)
+	assert.Equal(t, hub.Status.VolumeStatus, restoredHub.Status.VolumeStatus)
 	assert.Equal(t, hub.Status.Conditions, restoredHub.Status.Conditions)
 	assert.NotContains(t, restoredHub.Annotations, doguApiVersionAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, valuesAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, statusAppVersionAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, mappedValuesAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, skipSchemaValidationAnnotationKey)
+	assert.NotContains(t, restoredHub.Annotations, statusVolumesAnnotationKey)
 }
 
 func TestDogu_ConvertTo_DoesNotMutateSourceAnnotationsMap(t *testing.T) {
