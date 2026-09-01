@@ -19,6 +19,10 @@ import (
 var _ conditions.Getter = &Dogu{}
 var _ conditions.Setter = &Dogu{}
 
+// These constants are exported for use in other packages
+// nolint:unused
+//
+//goland:noinspection GoUnusedConst
 const (
 	// DoguLabelName is used to select a dogu pod by name.
 	DoguLabelName = "dogu.name"
@@ -284,13 +288,6 @@ const (
 	// Reasons v2: StoppingOperator, Deleting, DoguIsNotHealthy, DoguIsHealthy, Upgrading
 	ConditionHealthy             = "healthy"             // Needs to be translated
 	ConditionPauseReconciliation = "pauseReconciliation" // Same condition with equal reasons
-)
-
-const (
-	// Deprecated: This condition is only used by the "legacy" deployment strategy.
-	ConditionSupportMode = "supportMode"
-	// Deprecated: This condition is only used by the "legacy" deployment strategy.
-	ConditionMeetsMinVolumeSize = "meetsMinVolumeSize"
 )
 
 // New conditions
