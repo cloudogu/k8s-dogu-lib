@@ -20,11 +20,12 @@ var _ conversion.Convertible = &Dogu{}
 // fields to hold them natively. They are a pure transport mechanism: ConvertFrom sets them,
 // ConvertTo consumes and removes them again, so they never appear in a persisted v3beta1 object.
 const (
-	doguApiVersionAnnotationKey   = "k8s.cloudogu.com/v3beta1-doguApiVersion"
-	valuesAnnotationKey           = "k8s.cloudogu.com/v3beta1-values"
-	statusAppVersionAnnotationKey = "k8s.cloudogu.com/v3beta1-status-appVersion"
-	mappedValuesAnnotationKey     = "k8s.cloudogu.com/v3beta1-mapped-values"
-	doguNamespaceDelimiter        = "/"
+	doguApiVersionAnnotationKey       = "k8s.cloudogu.com/v3beta1-doguApiVersion"
+	valuesAnnotationKey               = "k8s.cloudogu.com/v3beta1-values"
+	statusAppVersionAnnotationKey     = "k8s.cloudogu.com/v3beta1-status-appVersion"
+	mappedValuesAnnotationKey         = "k8s.cloudogu.com/v3beta1-mapped-values"
+	skipSchemeValidationAnnotationKey = "k8s.cloudogu.com/v3beta1-skipped-scheme-validation"
+	doguNamespaceDelimiter            = "/"
 )
 
 // ConvertTo converts this v2 Dogu to the v3beta1 hub representation. This runs whenever a v2
@@ -82,6 +83,11 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 		delete(dst.Annotations, mappedValuesAnnotationKey)
 	}
 
+	if skipSchemeValidation, foundSkipSchemeValidation := d.Annotations[skipSchemeValidationAnnotationKey]; foundSkipSchemeValidation {
+		dst.Spec.SkipSchemaValidation = skipSchemeValidation == "true"
+		delete(dst.Annotations, skipSchemeValidationAnnotationKey)
+	}
+
 	dst.Status = convertStatusToV3beta1(d.Status, d.Annotations, dst.Annotations)
 	return nil
 }
@@ -111,38 +117,33 @@ func (d *Dogu) ConvertFrom(srcRaw conversion.Hub) error {
 	d.Spec.AdditionalIngressAnnotations = maps.Clone(map[string]string(src.Spec.AdditionalIngressAnnotations))
 	d.Spec.AdditionalMounts = convertMountsFromV3beta1(src.Spec.AdditionalMounts)
 
+	if d.Annotations == nil {
+		d.Annotations = map[string]string{}
+	}
+
 	// DoguApiVersion/Values have no field on v2. Stash them as transport annotations so a subsequent
 	// v2->v3beta1 conversion (ConvertTo) can restore them, unless they're already at their
 	// zero/default value, in which case a genuinely v2 dogu round-trips without annotation
 	// clutter.
 	if src.Spec.DoguApiVersion != "" && src.Spec.DoguApiVersion != v3beta1.DoguApiVersionV2 {
-		if d.Annotations == nil {
-			d.Annotations = map[string]string{}
-		}
 		d.Annotations[doguApiVersionAnnotationKey] = string(src.Spec.DoguApiVersion)
 	}
 	if src.Spec.Values.Raw != nil && len(src.Spec.Values.Raw) > 0 {
-		if d.Annotations == nil {
-			d.Annotations = map[string]string{}
-		}
 		d.Annotations[valuesAnnotationKey] = string(src.Spec.Values.Raw)
 	}
 
 	if src.Status.AppVersion != "" {
-		if d.Annotations == nil {
-			d.Annotations = map[string]string{}
-		}
 		d.Annotations[statusAppVersionAnnotationKey] = src.Status.AppVersion
 	}
 	if src.Spec.MappedValues != nil && len(src.Spec.MappedValues) > 0 {
-		if d.Annotations == nil {
-			d.Annotations = map[string]string{}
-		}
 		marshal, err := json.Marshal(src.Spec.MappedValues)
 		if err != nil {
 			return fmt.Errorf("failed to marshal mapped values: %w", err)
 		}
 		d.Annotations[mappedValuesAnnotationKey] = string(marshal)
+	}
+	if src.Spec.SkipSchemaValidation {
+		d.Annotations[skipSchemeValidationAnnotationKey] = "true"
 	}
 
 	d.Status = convertStatusFromV3beta1(src.Status, d.Annotations)

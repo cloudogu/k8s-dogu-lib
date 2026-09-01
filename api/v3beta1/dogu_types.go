@@ -95,6 +95,8 @@ type DoguSpec struct {
 	// dogus (DoguApiVersion=helm) configure additional mounts via Values instead.
 	// +optional
 	AdditionalMounts []DataMount `json:"additionalMounts,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
+	// SkipSchemaValidation indicates whether the schema validation should be skipped.
+	SkipSchemaValidation bool `json:"skipSchemaValidation,omitempty"`
 }
 
 // DataSourceType defines the supported source types of additional data mounts.

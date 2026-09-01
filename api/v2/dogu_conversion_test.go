@@ -114,12 +114,13 @@ func newV3beta1TestDogu() *v3beta1.Dogu {
 	return &v3beta1.Dogu{
 		ObjectMeta: metav1.ObjectMeta{Name: "dogu", Namespace: "ecosystem"},
 		Spec: v3beta1.DoguSpec{
-			Name:           "postgresql",
-			DoguNamespace:  "official",
-			Version:        "1.2.3-4",
-			DoguApiVersion: v3beta1.DoguApiVersionV3,
-			Values:         apiextensionsv1.JSON{Raw: []byte(`{"replicas":3}`)},
-			MappedValues:   map[string]string{"log-level": "info"},
+			Name:                 "postgresql",
+			DoguNamespace:        "official",
+			Version:              "1.2.3-4",
+			DoguApiVersion:       v3beta1.DoguApiVersionV3,
+			Values:               apiextensionsv1.JSON{Raw: []byte(`{"replicas":3}`)},
+			MappedValues:         map[string]string{"log-level": "info"},
+			SkipSchemaValidation: true,
 		},
 		Status: v3beta1.DoguStatus{
 			AppVersion:       "6.7",
@@ -145,6 +146,7 @@ func TestDogu_ConvertTo_ConvertFrom_V2NativeRoundTripIsLossless(t *testing.T) {
 	assert.NotContains(t, hub.Annotations, valuesAnnotationKey)
 	assert.NotContains(t, hub.Annotations, statusAppVersionAnnotationKey)
 	assert.NotContains(t, hub.Annotations, mappedValuesAnnotationKey)
+	assert.NotContains(t, hub.Annotations, skipSchemeValidationAnnotationKey)
 	assert.Equal(t, "unrelated annotation", hub.Annotations["custom.example.com/note"])
 
 	var result Dogu
@@ -165,10 +167,12 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	require.Contains(t, v2View.Annotations, valuesAnnotationKey)
 	require.Contains(t, v2View.Annotations, statusAppVersionAnnotationKey)
 	require.Contains(t, v2View.Annotations, mappedValuesAnnotationKey)
+	require.Contains(t, v2View.Annotations, skipSchemeValidationAnnotationKey)
 	assert.Equal(t, string(v3beta1.DoguApiVersionV3), v2View.Annotations[doguApiVersionAnnotationKey])
 	assert.Equal(t, `{"replicas":3}`, v2View.Annotations[valuesAnnotationKey])
 	assert.Equal(t, "6.7", v2View.Annotations[statusAppVersionAnnotationKey])
 	assert.Equal(t, `{"log-level":"info"}`, v2View.Annotations[mappedValuesAnnotationKey])
+	assert.Equal(t, "true", v2View.Annotations[skipSchemeValidationAnnotationKey])
 	assert.Equal(t, "official/postgresql", v2View.Spec.Name)
 
 	var restoredHub v3beta1.Dogu
@@ -179,11 +183,13 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	assert.Equal(t, "6.7", restoredHub.Status.AppVersion)
 	assert.Equal(t, "official", restoredHub.Spec.DoguNamespace)
 	assert.Equal(t, "postgresql", restoredHub.Spec.Name)
+	assert.Equal(t, true, restoredHub.Spec.SkipSchemaValidation)
 	assert.Equal(t, hub.Status.Conditions, restoredHub.Status.Conditions)
 	assert.NotContains(t, restoredHub.Annotations, doguApiVersionAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, valuesAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, statusAppVersionAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, mappedValuesAnnotationKey)
+	assert.NotContains(t, restoredHub.Annotations, skipSchemeValidationAnnotationKey)
 }
 
 func TestDogu_ConvertTo_DoesNotMutateSourceAnnotationsMap(t *testing.T) {
