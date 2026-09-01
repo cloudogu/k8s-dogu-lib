@@ -65,7 +65,9 @@ type DoguSpec struct {
 	// +optional
 	// +kubebuilder:pruning:PreserveUnknownFields
 	Values runtime.RawExtension `json:"values,omitempty"`
-
+	// MappedValues maps metadata values to specific values from the helm chart.
+	// This is typically used to change all container log levels by settings one single value.
+	MappedValues map[string]string `json:"mappedValues,omitempty"`
 	// Deprecated: Resources is only honored by the "legacy" deployment strategy. Helm-deployed
 	// dogus (DoguApiVersion=helm) configure volume sizing via Values instead.
 	Resources DoguResources `json:"resources,omitempty"`

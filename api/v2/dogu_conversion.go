@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"encoding/json"
 	"fmt"
 	"maps"
 	"slices"
@@ -22,6 +23,7 @@ const (
 	doguApiVersionAnnotationKey   = "k8s.cloudogu.com/v3beta1-doguApiVersion"
 	valuesAnnotationKey           = "k8s.cloudogu.com/v3beta1-values"
 	statusAppVersionAnnotationKey = "k8s.cloudogu.com/v3beta1-status-appVersion"
+	mappedValuesAnnotationKey     = "k8s.cloudogu.com/v3beta1-mapped-values"
 	doguNamespaceDelimiter        = "/"
 )
 
@@ -71,6 +73,15 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 	if values, foundValues := d.Annotations[valuesAnnotationKey]; foundValues {
 		dst.Spec.Values = runtime.RawExtension{Raw: []byte(values)}
 		delete(dst.Annotations, valuesAnnotationKey)
+	}
+
+	dst.Spec.MappedValues = map[string]string{}
+	if mappedValues, foundMappedValues := d.Annotations[mappedValuesAnnotationKey]; foundMappedValues {
+		err := json.Unmarshal([]byte(mappedValues), &dst.Spec.MappedValues)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal mapped values: %w", err)
+		}
+		delete(dst.Annotations, mappedValuesAnnotationKey)
 	}
 
 	dst.Status = convertStatusToV3beta1(d.Status, d.Annotations, dst.Annotations)
@@ -124,6 +135,16 @@ func (d *Dogu) ConvertFrom(srcRaw conversion.Hub) error {
 			d.Annotations = map[string]string{}
 		}
 		d.Annotations[statusAppVersionAnnotationKey] = src.Status.AppVersion
+	}
+	if src.Spec.MappedValues != nil && len(src.Spec.MappedValues) > 0 {
+		if d.Annotations == nil {
+			d.Annotations = map[string]string{}
+		}
+		marshal, err := json.Marshal(src.Spec.MappedValues)
+		if err != nil {
+			return fmt.Errorf("failed to marshal mapped values: %w", err)
+		}
+		d.Annotations[mappedValuesAnnotationKey] = string(marshal)
 	}
 
 	d.Status = convertStatusFromV3beta1(src.Status, d.Annotations)
