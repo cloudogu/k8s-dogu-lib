@@ -306,15 +306,15 @@ const (
 // +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Spec-Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu"
-// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.strategy",description="The deployment strategy used for this dogu"
-// +kubebuilder:printcolumn:name="Installed Version",type="string",JSONPath=".status.installedVersion",description="The current version of the dogu"
-// +kubebuilder:printcolumn:name="Health",type="string",JSONPath=".status.health",description="The current health state of the dogu"
-// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.status",description="The current status of the dogu"
-// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the resource"
-// +kubebuilder:printcolumn:name="Healthy",type="string",JSONPath=".status.conditions[?(@.type=='healthy')].status",description="Whether the resource is healthy in the current state"
+// +kubebuilder:printcolumn:name="Spec Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu chart"
+// +kubebuilder:printcolumn:name="Installed Version",type="string",JSONPath=".status.installedVersion",description="The current version of the dogu chart"
+// +kubebuilder:printcolumn:name="App Version",type="string",JSONPath=".status.appVersion",description="The current version of the dogu application"
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='ready')].status",description="Whether the resource is ready in the current state"
+// +kubebuilder:printcolumn:name="Healthy",type="string",JSONPath=".status.conditions[?(@.type=='healthy')].status",description="Whether the resource is healthy in the current state"
+// +kubebuilder:printcolumn:name="ApiVersion",type="string",JSONPath=".spec.doguApiVersion",description="The api version for this dogu"
+// +kubebuilder:printcolumn:name="Stopped",type="string",JSONPath=".status.conditions[?(@.type=='stopped')].status",description="Whether the dogu is stopped or not"
 // +kubebuilder:printcolumn:name="Pause Reconciliation",type="string",JSONPath=".status.conditions[?(@.type=='pauseReconciliation')].status",description="Whether the resource is ready in the current state"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the resource"
 
 // Dogu is the Schema for the dogus API
 type Dogu struct {

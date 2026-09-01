@@ -423,42 +423,42 @@ spec:
       subresources:
         status: {}
     - additionalPrinterColumns:
-        - description: The desired version of the dogu
+        - description: The desired version of the dogu chart
           jsonPath: .spec.version
-          name: Spec-Version
+          name: Spec Version
           type: string
-        - description: The deployment strategy used for this dogu
-          jsonPath: .spec.strategy
-          name: Strategy
-          type: string
-        - description: The current version of the dogu
+        - description: The current version of the dogu chart
           jsonPath: .status.installedVersion
           name: Installed Version
           type: string
-        - description: The current health state of the dogu
-          jsonPath: .status.health
-          name: Health
-          type: string
-        - description: The current status of the dogu
-          jsonPath: .status.status
-          name: Status
-          type: string
-        - description: The age of the resource
-          jsonPath: .metadata.creationTimestamp
-          name: Age
-          type: date
-        - description: Whether the resource is healthy in the current state
-          jsonPath: .status.conditions[?(@.type=='healthy')].status
-          name: Healthy
+        - description: The current version of the dogu application
+          jsonPath: .status.appVersion
+          name: App Version
           type: string
         - description: Whether the resource is ready in the current state
           jsonPath: .status.conditions[?(@.type=='ready')].status
           name: Ready
           type: string
+        - description: Whether the resource is healthy in the current state
+          jsonPath: .status.conditions[?(@.type=='healthy')].status
+          name: Healthy
+          type: string
+        - description: The api version for this dogu
+          jsonPath: .spec.doguApiVersion
+          name: ApiVersion
+          type: string
+        - description: Whether the dogu is stopped or not
+          jsonPath: .status.conditions[?(@.type=='stopped')].status
+          name: Stopped
+          type: string
         - description: Whether the resource is ready in the current state
           jsonPath: .status.conditions[?(@.type=='pauseReconciliation')].status
           name: Pause Reconciliation
           type: string
+        - description: The age of the resource
+          jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
       name: v3beta1
       schema:
         openAPIV3Schema:
@@ -542,6 +542,13 @@ spec:
                     ExportMode indicates whether the dogu should be in "export mode". If true, the operator will spawn an exporter sidecar
                     container along with a new volume mount to aid the migration process from one Cloudogu EcoSystem to another.
                   type: boolean
+                mappedValues:
+                  additionalProperties:
+                    type: string
+                  description: |-
+                    MappedValues maps metadata values to specific values from the helm chart.
+                    This is typically used to change all container log levels by settings one single value.
+                  type: object
                 name:
                   description: Name of the dogu without the namespace (e.g., ldap)
                   type: string
@@ -707,6 +714,9 @@ spec:
                         - type
                       type: object
                   type: object
+                skipSchemaValidation:
+                  description: SkipSchemaValidation indicates whether the schema validation should be skipped.
+                  type: boolean
                 stopped:
                   description: Stopped indicates whether the dogu should be running (stopped=false) or not (stopped=true).
                   type: boolean
@@ -733,7 +743,6 @@ spec:
                     Values contains Helm values.yaml overrides for this dogu's chart. Only meaningful when
                     DoguApiVersion is "v3"; ignored otherwise. The structure is arbitrary and validated by the
                     chart itself, not by this schema.
-                  type: object
                   x-kubernetes-preserve-unknown-fields: true
                 version:
                   description: Version of the dogu (e.g. 2.4.48-3)
@@ -849,6 +858,59 @@ spec:
                 stopped:
                   description: Stopped shows if the dogu has been stopped or not.
                   type: boolean
+                volumeStatus:
+                  description: VolumesStatus contains relevant information about all persistent volume claims used by the dogu.
+                  items:
+                    properties:
+                      claimName:
+                        type: string
+                      desiredSize:
+                        anyOf:
+                          - type: integer
+                          - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      mountedBy:
+                        items:
+                          description: |-
+                            TypedLocalObjectReference contains enough information to let you locate the
+                            typed referenced object inside the same namespace.
+                          properties:
+                            apiGroup:
+                              description: |-
+                                APIGroup is the group for the resource being referenced.
+                                If APIGroup is not specified, the specified Kind must be in the core API group.
+                                For any other third-party types, APIGroup is required.
+                              type: string
+                            kind:
+                              description: Kind is the type of resource being referenced
+                              type: string
+                            name:
+                              description: Name is the name of resource being referenced
+                              type: string
+                          required:
+                            - kind
+                            - name
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        type: array
+                        x-kubernetes-list-map-keys:
+                          - kind
+                          - namee
+                        x-kubernetes-list-type: map
+                      size:
+                        anyOf:
+                          - type: integer
+                          - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      state:
+                        type: string
+                    type: object
+                  type: array
+                  x-kubernetes-list-map-keys:
+                    - claimName
+                  x-kubernetes-list-type: map
               required:
                 - requeuePhase
                 - requeueTime
