@@ -896,7 +896,7 @@ spec:
                         type: array
                         x-kubernetes-list-map-keys:
                           - kind
-                          - namee
+                          - name
                         x-kubernetes-list-type: map
                       size:
                         anyOf:
@@ -906,6 +906,8 @@ spec:
                         x-kubernetes-int-or-string: true
                       state:
                         type: string
+                    required:
+                      - claimName
                     type: object
                   type: array
                   x-kubernetes-list-map-keys:

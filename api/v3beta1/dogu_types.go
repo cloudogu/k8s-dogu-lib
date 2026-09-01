@@ -206,7 +206,7 @@ type MountRef struct {
 }
 
 type VolumeStatus struct {
-	ClaimName   string            `json:"claimName,omitempty"`
+	ClaimName   string            `json:"claimName"`
 	Size        resource.Quantity `json:"size,omitempty"`
 	DesiredSize resource.Quantity `json:"desiredSize,omitempty"`
 	State       VolumeStatusState `json:"state,omitempty"`
@@ -214,7 +214,7 @@ type VolumeStatus struct {
 	// +patchStrategy=merge
 	// +listType=map
 	// +listMapKey=kind
-	// +listMapKey=namee
+	// +listMapKey=name
 	MountedBy []corev1.TypedLocalObjectReference `json:"mountedBy,omitempty"`
 }
 
