@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/cloudogu/cesapp-lib/core"
@@ -129,6 +130,21 @@ func newV3beta1TestDogu() *v3beta1.Dogu {
 			InstalledVersion: "1.2.3-4",
 			Stopped:          true,
 			ExportMode:       false,
+			VolumeStatus: []v3beta1.VolumeStatus{
+				{
+					ClaimName:   "nexus-data",
+					Size:        resource.MustParse("10Gi"),
+					DesiredSize: resource.MustParse("10Gi"),
+					State:       v3beta1.VolumeStatusStateReady,
+					MountedBy: []corev1.TypedLocalObjectReference{
+						{
+							Name:     "nexus",
+							Kind:     "StatefulSet",
+							APIGroup: new("apps"),
+						},
+					},
+				},
+			},
 		},
 	}
 }

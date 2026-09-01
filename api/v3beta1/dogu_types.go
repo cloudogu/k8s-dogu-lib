@@ -5,6 +5,7 @@ import (
 
 	cescommons "github.com/cloudogu/ces-commons-lib/dogu"
 	"github.com/cloudogu/cesapp-lib/core"
+	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -188,6 +189,31 @@ const (
 	UnknownHealthStatus     HealthStatus = "unknown"
 )
 
+type VolumeStatusState string
+
+const (
+	VolumeStatusStateReady VolumeStatusState = "ready"
+	// TODO More states? Resizing?
+)
+
+type MountRef struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
+}
+
+type VolumeStatus struct {
+	ClaimName   string            `json:"claimName,omitempty"`
+	Size        resource.Quantity `json:"size,omitempty"`
+	DesiredSize resource.Quantity `json:"desiredSize,omitempty"`
+	State       VolumeStatusState `json:"state,omitempty"`
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=kind
+	// +listMapKey=namee
+	MountedBy []corev1.TypedLocalObjectReference `json:"mountedBy,omitempty"`
+}
+
 // DoguStatus defines the observed state of a Dogu.
 type DoguStatus struct {
 	// Status represents the state of the Dogu in the ecosystem
@@ -222,6 +248,12 @@ type DoguStatus struct {
 	// +listType=map
 	// +listMapKey=type
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	// VolumesStatus contains relevant information about all persistent volume claims used by the dogu.
+	// +patchMergeKey=claimName
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=claimName
+	VolumeStatus []VolumeStatus `json:"volumeStatus,omitempty"`
 }
 
 // These constants are exported for use in other packages
