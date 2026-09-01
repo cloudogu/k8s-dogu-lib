@@ -103,7 +103,7 @@ func newTestConditions() []metav1.Condition {
 		newCondition(v3beta1.ConditionReady, metav1.ConditionFalse, "Installing", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionHealthy, metav1.ConditionFalse, "WorkloadsNotReady", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionSchemaValidationSkipped, metav1.ConditionFalse, "SchemaValidationEnabled", "...", testTime, observingGeneration),
-		newCondition(v3beta1.ConditionPausedValid, metav1.ConditionFalse, "SchemaInvalid", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionValid, metav1.ConditionFalse, "SchemaInvalid", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionStopped, metav1.ConditionTrue, "Stopped", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionExportModeActive, metav1.ConditionFalse, "NotActive", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionPauseReconciliation, metav1.ConditionTrue, "ReconiliationPaused", "...", testTime, observingGeneration),

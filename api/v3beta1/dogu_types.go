@@ -288,12 +288,13 @@ const (
 // New conditions
 const (
 	ConditionStopped                 = "stopped"
-	ConditionPausedValid             = "valid"
+	ConditionValid                   = "valid"
 	ConditionChartAvailable          = "chartAvailable"
 	ConditionUpdatePending           = "updatePending"
 	ConditionSchemaValidationSkipped = "schemaValidationSkipped"
 	ConditionExportModeActive        = "exportModeActive"
 )
+
 // Reasons for the v3beta1 conditions.
 // The condition type says what is wrong, the reason says why
 // The vocabulary is closed, so every operator writing these conditions uses the same strings.
@@ -302,54 +303,55 @@ const (
 //
 //goland:noinspection GoUnusedConst
 const (
-      // Reasons for ConditionReady. They name the operation that is currently in progress and
-      // therefore keeps the dogu from being ready.
-      ReasonInstalling         = "Installing"
-      ReasonUpgrading          = "Upgrading"
-      ReasonResizingPVC        = "ResizingPVC"
-      ReasonChangingExportMode = "ChangingExportMode"
-      ReasonStarting           = "Starting"
-      ReasonStopping           = "Stopping"
-      ReasonDeleting           = "Deleting"
+	// Reasons for ConditionReady. They name the operation that is currently in progress and
+	// therefore keeps the dogu from being ready.
+	ReasonInstalling         = "Installing"
+	ReasonUpgrading          = "Upgrading"
+	ReasonResizingPVC        = "ResizingPVC"
+	ReasonChangingExportMode = "ChangingExportMode"
+	ReasonStarting           = "Starting"
+	ReasonStopping           = "Stopping"
+	ReasonDeleting           = "Deleting"
 
-      // Reasons for ConditionHealthy.
-      // ReasonStopped is shared with ConditionUpdatePending.
-      ReasonStopped           = "Stopped"
-      ReasonWorkloadsNotReady = "WorkloadsNotReady"
+	// Reasons for ConditionHealthy.
+	// ReasonStopped is shared with ConditionUpdatePending.
+	ReasonStopped           = "Stopped"
+	ReasonWorkloadsNotReady = "WorkloadsNotReady"
 
-      // Reasons for ConditionExportModeActive.
-      ReasonNotActive       = "NotActive"
-      ReasonPartiallyActive = "PartiallyActive"
+	// Reasons for ConditionExportModeActive.
+	ReasonNotActive       = "NotActive"
+	ReasonPartiallyActive = "PartiallyActive"
 
-      // Reasons for ConditionStopped.
-      ReasonNotStopped       = "NotStopped"
-      ReasonPartiallyStopped = "PartiallyStopped"
+	// Reasons for ConditionStopped.
+	ReasonNotStopped       = "NotStopped"
+	ReasonPartiallyStopped = "PartiallyStopped"
 
-      // Reasons for ConditionPauseReconciliation.
-      ReasonReconciliationEnabled = "ReconciliationEnabled"
-      ReasonReconciliationPaused  = "ReconciliationPaused"
+	// Reasons for ConditionPauseReconciliation.
+	ReasonReconciliationEnabled = "ReconciliationEnabled"
+	ReasonReconciliationPaused  = "ReconciliationPaused"
 
-      // Reasons for ConditionValid. They name why the dogu resource cannot be processed.
-      ReasonSchemaInvalid          = "SchemaInvalid"
-      ReasonUnsupportedField       = "UnsupportedField"
-      ReasonVolumeShrink           = "VolumeShrink"
-      ReasonStorageClassImmutable  = "StorageClassImmutable"
-      ReasonNoUpgradePath          = "NoUpgradePath"
-      ReasonExportModeOnInstall    = "ExportModeOnInstall"
+	// Reasons for ConditionValid. They name why the dogu resource cannot be processed.
+	ReasonSchemaInvalid         = "SchemaInvalid"
+	ReasonUnsupportedField      = "UnsupportedField"
+	ReasonVolumeShrink          = "VolumeShrink"
+	ReasonStorageClassImmutable = "StorageClassImmutable"
+	ReasonNoUpgradePath         = "NoUpgradePath"
+	ReasonExportModeOnInstall   = "ExportModeOnInstall"
 
-      // Reasons for ConditionChartAvailable.
-      ReasonChartNotFound  = "ChartNotFound"
-      ReasonDownloadFailed = "DownloadFailed"
-      ReasonUnauthorized   = "Unauthorized"
+	// Reasons for ConditionChartAvailable.
+	ReasonChartNotFound  = "ChartNotFound"
+	ReasonDownloadFailed = "DownloadFailed"
+	ReasonUnauthorized   = "Unauthorized"
 
-      // Reasons for ConditionUpdatePending. They name why a pending change is not applied.
-      // ReasonStopped is declared above.
-      ReasonPauseReconciliation = "PauseReconciliation"
+	// Reasons for ConditionUpdatePending. They name why a pending change is not applied.
+	// ReasonStopped is declared above.
+	ReasonPauseReconciliation = "PauseReconciliation"
 
-      // Reasons for ConditionSchemaValidationSkipped.
-      ReasonSchemaValidationEnabled  = "SchemaValidationEnabled"
-      ReasonSchemaValidationDisabled = "SchemaValidationDisabled"
+	// Reasons for ConditionSchemaValidationSkipped.
+	ReasonSchemaValidationEnabled  = "SchemaValidationEnabled"
+	ReasonSchemaValidationDisabled = "SchemaValidationDisabled"
 )
+
 // +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
