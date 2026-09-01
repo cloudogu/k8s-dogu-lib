@@ -6,12 +6,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/cloudogu/cesapp-lib/core"
 	v3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func quantityPtr(s string) *resource.Quantity {
@@ -118,7 +118,7 @@ func newV3beta1TestDogu() *v3beta1.Dogu {
 			DoguNamespace:  "official",
 			Version:        "1.2.3-4",
 			DoguApiVersion: v3beta1.DoguApiVersionV3,
-			Values:         runtime.RawExtension{Raw: []byte(`{"replicas":3}`)},
+			Values:         apiextensionsv1.JSON{Raw: []byte(`{"replicas":3}`)},
 			MappedValues:   map[string]string{"log-level": "info"},
 		},
 		Status: v3beta1.DoguStatus{
@@ -221,7 +221,7 @@ func TestDogu_ConvertFrom_DoesNotAliasHubAnnotationsMap(t *testing.T) {
 		},
 		Spec: v3beta1.DoguSpec{
 			DoguApiVersion: v3beta1.DoguApiVersionV3,
-			Values:         runtime.RawExtension{Raw: []byte("{}")},
+			Values:         apiextensionsv1.JSON{Raw: []byte("{}")},
 		},
 	}
 

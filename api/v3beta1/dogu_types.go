@@ -5,9 +5,9 @@ import (
 
 	cescommons "github.com/cloudogu/ces-commons-lib/dogu"
 	"github.com/cloudogu/cesapp-lib/core"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api/util/conditions"
 )
 
@@ -64,7 +64,7 @@ type DoguSpec struct {
 	// chart itself, not by this schema.
 	// +optional
 	// +kubebuilder:pruning:PreserveUnknownFields
-	Values runtime.RawExtension `json:"values,omitempty"`
+	Values apiextensionsv1.JSON `json:"values,omitempty"`
 	// MappedValues maps metadata values to specific values from the helm chart.
 	// This is typically used to change all container log levels by settings one single value.
 	MappedValues map[string]string `json:"mappedValues,omitempty"`

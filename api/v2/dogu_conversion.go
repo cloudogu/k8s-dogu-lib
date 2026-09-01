@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
-	"k8s.io/apimachinery/pkg/runtime"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
@@ -69,13 +69,11 @@ func (d *Dogu) ConvertTo(dstRaw conversion.Hub) error {
 		dst.Spec.DoguApiVersion = v3beta1.DoguApiVersion(doguApiVersion)
 		delete(dst.Annotations, doguApiVersionAnnotationKey)
 	}
-	dst.Spec.Values = runtime.RawExtension{}
 	if values, foundValues := d.Annotations[valuesAnnotationKey]; foundValues {
-		dst.Spec.Values = runtime.RawExtension{Raw: []byte(values)}
+		dst.Spec.Values = apiextensionsv1.JSON{Raw: []byte(values)}
 		delete(dst.Annotations, valuesAnnotationKey)
 	}
 
-	dst.Spec.MappedValues = map[string]string{}
 	if mappedValues, foundMappedValues := d.Annotations[mappedValuesAnnotationKey]; foundMappedValues {
 		err := json.Unmarshal([]byte(mappedValues), &dst.Spec.MappedValues)
 		if err != nil {
@@ -123,7 +121,7 @@ func (d *Dogu) ConvertFrom(srcRaw conversion.Hub) error {
 		}
 		d.Annotations[doguApiVersionAnnotationKey] = string(src.Spec.DoguApiVersion)
 	}
-	if len(src.Spec.Values.Raw) > 0 {
+	if src.Spec.Values.Raw != nil && len(src.Spec.Values.Raw) > 0 {
 		if d.Annotations == nil {
 			d.Annotations = map[string]string{}
 		}
