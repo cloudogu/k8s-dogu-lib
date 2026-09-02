@@ -1,0 +1,615 @@
+# Dogu format (v3beta1)
+
+> **Beta**: `k8s.cloudogu.com/v3beta1` ist eine Vorschau auf die nächste Generation der Dogu-CR.
+> Sie wird parallel zu `k8s.cloudogu.com/v2` (aktuelle Storage-Version) ausgeliefert, der API-Server
+> konvertiert dabei transparent zwischen beiden Versionen, sodass bestehende `v2`-Dogu-CRs
+> unverändert weiterlaufen. Wird `doguApiVersion: v3` gesetzt, wird das Dogu für die kommende
+> Helm-basierte Deployment-Strategie vorgesehen, die vom Dogu-Operator noch nicht vollständig
+> unterstützt wird. Bis dahin sollten Dogu-CRs für den produktiven Einsatz weiterhin wie in
+> [Dogu format](dogu_format_de.md) (`v2`) beschrieben angelegt werden.
+
+Folgend werden alle Felder einer `v3beta1`-Dogu-CR beschrieben und mit Beispielen veranschaulicht.
+Nur die Felder, die neu sind oder sich gegenüber `v2` anders verhalten, werden ausführlich
+beschrieben; für alle übrigen Felder siehe [Dogu format](dogu_format_de.md).
+
+## Komplettes Beispiel
+
+```yaml
+apiVersion: k8s.cloudogu.com/v3beta1
+kind: Dogu
+metadata:
+  name: usermgt
+spec:
+  name: usermgt
+  doguNamespace: official
+  version: 1.20.0-5
+  doguApiVersion: v2
+  mappedValues:
+    logLevel: "debug"
+  additionalIngressAnnotations: # deprecated
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  additionalMounts: # deprecated
+    - sourceType: ConfigMap
+      name: my-configmap
+      volume: importHistory
+      subfolder: "my-configmap-subfolder"
+  exportMode: false
+  resources: # deprecated
+    minDataVolumeSize: 2Gi
+  security: # deprecated
+    appArmorProfile:
+      localhostProfile: "localhost-profile"
+      type: Localhost
+    capabilities:
+      add:
+        - CAP_AUDIT_CONTROL
+      drop:
+        - CAP_SETGID
+    readOnlyRootFileSystem: false
+    runAsNonRoot: false
+    seLinuxOptions:
+      level: internal
+      role: user_r
+      type: user_t
+      user: user_u
+    seccompProfile:
+      type: RuntimeDefault
+  stopped: false
+  pauseReconciliation: false
+  supportMode: false # deprecated
+  upgradeConfig:
+    allowNamespaceSwitch: false
+    forceUpgrade: false
+  skipSchemaValidation: false
+```
+
+## Name
+
+* Pflichtfeld
+* Datentyp: string
+* Inhalt: Gibt den Namen des Dogus ohne dessen Namespace an. In `v2` war dies zusammen mit dem
+  Namespace ein einziger String (`namespace/name`); in `v3beta1` sind beide Felder getrennt.
+* Beispiel: `"name": "usermgt"`
+
+## DoguNamespace
+
+* Pflichtfeld
+* Datentyp: string
+* Inhalt: Gibt den Namespace des Dogus an (der Teil vor dem Schrägstrich im `name`-Feld von `v2`,
+  z. B. `official`).
+* Beispiel: `"doguNamespace": "official"`
+
+## Version
+
+* Pflichtfeld
+* Datentyp: string
+* Inhalt: Gibt die Version des Dogu an.
+* Beispiel: `"version": "1.20.0-5"`
+
+## DoguApiVersion
+
+* Optional
+* Datentyp: Enum <v2; v3>
+* Standardwert: `v2`
+* Inhalt: Legt fest, welche interne Deployment-Routine des Dogu-Operator-Reconcilers für dieses
+  Dogu verwendet wird.
+    - `v2` - erzeugt Kubernetes-Ressourcen ad-hoc aus den Attributen des Dogus, genau wie es
+      `k8s.cloudogu.com/v2`-Dogus heute tun. `resources`, `security`, `supportMode` und
+      `additionalMounts` gelten dabei.
+    - `v3` - **wird vom Dogu-Operator noch nicht unterstützt.** Sobald verfügbar, wird das Dogu
+      damit als Helm-Release deployt und verwaltet, konfiguriert über `values` statt über
+      `resources`/`security`/`additionalMounts`.
+* Beispiel: `"doguApiVersion": "v2"`
+
+## Values
+
+* Optional
+* Datentyp: Object
+* Inhalt: Helm-`values.yaml`-Overrides für das Chart dieses Dogus. Nur relevant, wenn
+  `doguApiVersion` auf `v3` steht, sonst wird das Feld ignoriert. Die Struktur ist beliebig und
+  wird vom Chart selbst validiert, nicht von diesem Schema.
+* Beispiel:
+
+```
+values:
+  replicaCount: 2
+```
+
+## MappedValues
+
+* Optional
+* Datentyp: Object (String-zu-String-Map)
+* Inhalt: MappedValues bildet Metadaten-Werte auf spezifische Werte des Helm-Charts ab. Damit lässt
+  sich z. B. mit einem einzigen Wert das Log-Level aller Container gleichzeitig ändern.
+* Beispiel:
+
+```
+mappedValues:
+  logLevel: "debug"
+```
+
+## AdditionalIngressAnnotations
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet.
+
+* Optional
+* Datentyp: string
+* Inhalt: AdditionalIngressAnnotations liefert zusätzliche Anmerkungen, die in die Ingress-Regeln des Dogus aufgenommen
+  werden.
+* Beispiel:
+
+```
+additionalIngressAnnotations:
+  nginx.ingress.kubernetes.io/proxy-body-size: "0"
+```
+
+## AdditionalMounts
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet; Helm-deployte Dogus
+(`doguApiVersion: v3`) konfigurieren zusätzliche Mounts stattdessen über `values`.
+
+* Optional
+* Datentyp: Array<DataMount>
+* Inhalt: AdditionalMounts bietet die Möglichkeit, zusätzliche Daten in das Dogu einzubinden.
+* Beispiel:
+
+```
+  additionalMounts:
+    - sourceType: ConfigMap
+      name: my-configmap
+      volume: importHistory
+      subfolder: "my-configmap-subfolder"
+    - sourceType: Secret
+      name: my-secret
+      volume: importHistory
+```
+
+### DataMount
+
+Ein DataMount kann die folgenden Felder enthalten:
+
+#### SourceType
+
+* Pflichtfeld
+* Datentyp: Enum <ConfigMap; Secret>
+* Inhalt: SourceType legt fest, woher die Daten stammen.
+  Gültige Optionen sind:
+    - ConfigMap - Daten, die in einer kubernetes ConfigMap gespeichert sind.
+    - Secret - Daten, die in einem kubernetes Secret gespeichert sind.
+* Beispiel: `"sourceType": ConfigMap`
+
+#### Name
+
+* Pflichtfeld
+* Datentyp: String
+* Inhalt: Name ist der Name der Datenquelle.
+* Beispiel: `"name": my-configmap`
+
+#### Volume
+
+* Pflichtfeld
+* Datentyp: String
+* Inhalt: Volume ist der Name des Volumes, in das die Daten gemountet werden sollen. Dieses wird in der jeweiligen
+  dogu.json definiert.
+* Beispiel: `"volume": importHistory`
+
+#### Subfolder
+
+* Optional
+* Datentyp: String
+* Inhalt: Subfolder definiert einen Unterordner, in dem die Daten innerhalb des Volumes abgelegt werden sollen.
+* Beispiel: `"subfolder": "my-configmap-subfolder"`
+
+## ExportMode
+
+* Optional
+* Datentyp: String
+* Inhalt: ExportMode gibt an, ob sich das Dogu im „Exportmodus“ befinden soll. Wenn dies der Fall ist, erzeugt der
+  Operator einen Sidecar-Container zusammen mit einem neuen Volume-Mount, um den Migrationsprozess von einem Cloudogu
+  EcoSystem zu einem anderen zu unterstützen.
+* Beispiel: `"exportMode": false`
+
+## Resources
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet; Helm-deployte Dogus
+(`doguApiVersion: v3`) konfigurieren die Volume-Größe stattdessen über `values`.
+
+* Optional
+* Datentyp: Object
+* Inhalt: Ressourcen des Dogus (e.g. minDataVolumeSize)
+* Beispiel:
+
+```
+resources:
+  minDataVolumeSize: 2Gi
+```
+
+### MinDataVolumeSize
+
+* Optional
+* Datentyp: String
+* Inhalt: MinDataVolumeSize stellt die gewünschte Mindestgröße des Volumes dar. Das Erhöhen dieses Wertes führt ggf. zu einer
+  automatischen Erweiterung. Dies beinhaltet eine Ausfallzeit für die jeweilige Dogu. Die Standardgröße für Volumes ist
+  „2Gi“. Es ist nicht möglich, die Größe des Volumes nach einer Erweiterung zu verringern. Dies würde zu einem
+  inkonsistenten Zustand des Dogus führen.
+* Beispiel: `"minDataVolumeSize": 2Gi`
+
+## Security
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet; Helm-deployte Dogus
+(`doguApiVersion: v3`) konfigurieren die Container-Security stattdessen über `values`.
+
+* Optional
+* Datentyp: Object
+* Inhalt: Security überschreibt die im Dogu-Deskriptor definierten Sicherheitsrichtlinien. Diese Felder können verwendet
+  werden, um die Angriffsfläche eines Dogu weiter zu reduzieren.
+
+Security kann die folgenden Attribute enthalten:
+
+### AppArmorProfile
+
+* Optional
+* Datentyp: Object
+* Inhalt: AppArmorProfile sind die von diesem Container zu verwendenden AppArmor-Optionen.
+* Beispiel:
+
+```
+appArmorProfile:
+  localhostProfile: "localhost-profile"
+  type: Localhost
+```
+
+#### Type
+
+* Pflichtfeld
+* Datentyp: Enum <Localhost; RuntimeDefault; Unconfined>
+* Inhalt: Type gibt an, welche Art von AppArmor-Profil angewendet wird.
+  Gültige Optionen sind:
+    - Localhost - ein auf dem Node vorgeladenes Profil.
+    - RuntimeDefault - das Standardprofil der Container-Runtime.
+    - Unconfined - keine AppArmor-Durchsetzung.
+
+#### LocalhostProfile
+
+* Optional
+* Datentyp: String
+* Inhalt: LocalhostProfile gibt ein auf dem Node geladenes Profil an, das verwendet werden soll.
+  Das Profil muss auf dem Node vorkonfiguriert sein, um zu funktionieren. Der Name muss mit dem des geladenen Profils
+  übereinstimmen.
+  Muss nur gesetzt werden, wenn der Typ „Localhost“ ist.
+
+### Capabilities
+
+* Optional
+* Datentyp: Object
+* Inhalt: Capabilities legt die erlaubten und nicht erlaubten Fähigkeiten für das Dogu fest. Das Dogu sollte nicht mehr
+  als die hier konfigurierten Capabilities verwenden, da es sonst beim Start oder zur Laufzeit zu Fehlern kommen kann.
+  Jede Fähigkeit repräsentiert einen POSIX-„Capabilities“-Typ. Siehe Dokumentationen
+  unter https://manned.org/capabilities.7
+* Beispiel:
+
+```
+capabilities:
+  add:
+    - CAP_AUDIT_CONTROL
+  drop:
+    - CAP_SETGID
+```
+
+#### Add
+
+* Optional
+* Datentyp: Array<String>
+* Inhalt: Add enthält die Capabilities, deren Verwendung in einem Container erlaubt sein soll. Diese Liste ist optional.
+
+#### Drop
+
+* Optional
+* Datentyp: Array<String>
+* Inhalt: Drop enthält die Capabilities, die für die Verwendung in einem Container gesperrt werden sollen. Diese Liste
+  ist optional.
+
+### ReadOnlyRootFileSystem
+
+* Optional
+* Datentyp: boolean
+* Inhalt: ReadOnlyRootFileSystem mountet das Root-Dateisystem des Containers als schreibgeschützt. Das Dogu muss den
+  Zugriff auf das Root-Dateisystem nur lesend unterstützen, ansonsten kann der Dogu-Start fehlschlagen. Dieses Flag ist
+  optional und steht standardmäßig auf nil.
+  Ist es gleich nil, wird der im Dogu-Deskriptor definierte Wert verwendet.
+* Beispiel: `"readOnlyRootFileSystem": true`
+
+### RunAsNonRoot
+
+* Optional
+* Datentyp: boolean
+* Inhalt: RunAsNonRoot gibt an, dass der Container als Nicht-Root-User laufen muss. Das Dogu muss die Ausführung als
+  Nicht-Root-User unterstützen, andernfalls kann der Start vom Dogu fehlschlagen. Dieses Flag ist optional und steht
+  standardmäßig auf nil.
+  Ist es gleich nil, wird der im Dogu-Deskriptor definierte Wert verwendet.
+* Beispiel: `"runsNonRoot": true`
+
+### SeLinuxOptions
+
+* Optional
+* Datentyp: Object
+* Inhalt: SELinuxOptions ist der SELinux-Kontext, der auf den Container angewendet werden soll.
+  Wenn nicht angegeben, wird die Container-Runtime einen zufälligen SELinux- Kontext für jeden Container zuweisen, was
+  das kubernetes Standardverhalten ist.
+* Beispiel:
+
+```
+seLinuxOptions:
+  level: internal
+  role: user_r
+  type: user_t
+  user: user_u
+```
+
+#### Level
+
+* Optional
+* Datentyp: string
+* Inhalt: Level ist das SELinux-Level-Label, das für den Container gilt.
+
+#### Role
+
+* Optional
+* Datentyp: string
+* Inhalt: Role ist das SELinux-Role-Label, das für den Container gilt.
+
+#### Type
+
+* Optional
+* Datentyp: string
+* Inhalt: Type ist das SELinux-Type-Label, das für den Container gilt.
+
+#### User
+
+* Optional
+* Datentyp: string
+* Inhalt: User ist das SELinux-User-Label, das für den Container gilt.
+
+### SeccompProfile
+
+* Optional
+* Datentyp: Object
+* Inhalt: SeccompProfile sind die Seccomp-Optionen, die von diesem Container verwendet werden sollen.
+* Beispiel:
+
+```
+seccompProfile:
+  localhostProfile: "localhost-profile"
+  type: Localhost
+```
+
+#### Type
+
+* Pflichtfeld
+* Datentyp: Enum <Localhost; RuntimeDefault; Unconfined>
+* Inhalt: Typ gibt an, welche Art von SeccompProfile angewendet wird.
+  Gültige Optionen sind:
+    - Localhost - es soll ein Profil verwendet werden, das in einer Datei auf dem Node definiert ist.
+    - RuntimeDefault - es soll das Standardprofil der Container- Runtime verwendet werden.
+    - Unconfined - es soll kein Profil angewendet werden.
+
+#### LocalhostProfile
+
+* Optional
+* Datentyp: string
+* Inhalt: LocalhostProfile gibt an, dass ein in einer Datei auf dem Node definiertes Profil verwendet werden soll.
+  Das Profil muss auf dem Node vorkonfiguriert sein, damit es funktioniert.
+  Es muss ein Pfad sein, der relativ zum Speicherort des konfigurierten seccomp-Profils des Kubelet ist.
+  Muss gesetzt werden, wenn der Typ „Localhost“ ist. Darf NICHT für einen anderen Typ gesetzt werden.
+
+## Stopped
+
+* Optional
+* Datentyp: boolean
+* Inhalt: Stopped gibt an, ob das Dogu laufen soll (stopped=false) oder nicht (stopped=true).
+* Beispiel: `"stopped": true`
+
+## PauseReconciliation
+
+* Optional
+* Datentyp: boolean
+* Inhalt: PauseReconciliation gibt an, ob die Reconciliation-Schleife laufen soll
+  (pauseReconciliation=false) oder nicht (pauseReconciliation=true). Der Validierungsschritt läuft
+  unabhängig von dieser Einstellung immer weiter.
+* Beispiel: `"pauseReconciliation": true`
+
+## SupportMode
+
+Das Feld ist `deprecated`. Es wird nur bei `doguApiVersion: v2` ausgewertet.
+
+* Optional
+* Datentyp: boolean
+* Inhalt: SupportMode gibt an, ob das Dogu im Support-Modus neu gestartet werden soll (z. B. um manuell aus eine
+  Absturzschleife zu beheben).
+* Beispiel: `"supportMode": true`
+
+## UpgradeConfig
+
+* Optional
+* Datentyp: Object
+* Inhalt: UpgradeConfig enthält Optionen zur Beeinflussung des Upgrade-Prozesses.
+* Beispiel:
+
+```
+upgradeConfig:
+  allowNamespaceSwitch: false
+  forceUpgrade: false
+```
+
+### AllowNamespaceSwitch
+
+* Optional
+* Datentyp: boolean
+* Inhalt: AllowNamespaceSwitch lässt ein Dogu seinen Dogu-Namespace während eines Upgrades wechseln. Das Dogu muss
+  technisch dasselbe Dogu sein, das sich in einem anderen Namespace befunden hat. Die Version des entfernten Dogus muss
+  gleich oder größer als die Version des lokalen Dogus sein.
+
+### ForceUpgrade
+
+* Optional
+* Datentyp: boolean
+* Inhalt: ForceUpgrade erlaubt es, die gleiche oder sogar eine niedrigere Dogu-Version zu installieren, als bereits
+  installiert ist. Bitte beachten Sie, dass durch ein unsachgemäßes Dogu-Downgrade Datenverluste auftreten können.
+
+## SkipSchemaValidation
+
+* Optional
+* Datentyp: boolean
+* Inhalt: SkipSchemaValidation gibt an, ob die Schema-Validierung des Dogus übersprungen werden soll.
+* Beispiel: `"skipSchemaValidation": true`
+
+## Status
+
+Der `status`-Block einer `v3beta1`-Dogu-CR wird ausschließlich vom Dogu-Operator geschrieben und
+spiegelt den vom Operator beobachteten Ist-Zustand des Dogus wider.
+
+### Beispiel
+
+```yaml
+status:
+  installedVersion: 1.20.0-5
+  appVersion: 4.2.1
+  stopped: false
+  exportMode: false
+  startedAt: "2026-08-01T10:00:00Z"
+  conditions:
+    - type: ready
+      status: "True"
+    - type: healthy
+      status: "True"
+    - type: stopped
+      status: "False"
+      reason: NotStopped
+    - type: pauseReconciliation
+      status: "False"
+      reason: ReconciliationEnabled
+  volumeStatus:
+    - claimName: usermgt-data
+      size: 2Gi
+      desiredSize: 2Gi
+      state: ready
+```
+
+### InstalledVersion
+
+* Datentyp: string
+* Inhalt: Die aktuell installierte Version des Dogu-Charts (z. B. `1.20.0-5`).
+* Beispiel: `"installedVersion": "1.20.0-5"`
+
+### AppVersion
+
+* Datentyp: string
+* Inhalt: Die Version der im Dogu enthaltenen Anwendung (z. B. `4.2.1`). Im Unterschied zu
+  `installedVersion`, die die Version des Dogu-Charts angibt.
+* Beispiel: `"appVersion": "4.2.1"`
+
+### StartedAt
+
+* Datentyp: Zeitstempel
+* Inhalt: Zeitpunkt des letzten (Neu-)Starts des Dogus.
+
+### Stopped
+
+* Datentyp: boolean
+* Inhalt: Gibt den beobachteten Ist-Zustand zu `spec.stopped` an. Kann während eines laufenden
+  Stopp- oder Start-Vorgangs kurzzeitig vom `spec`-Feld abweichen.
+
+### ExportMode
+
+* Datentyp: boolean
+* Inhalt: Gibt an, ob der Exportmodus des Dogus aktuell tatsächlich aktiv ist. Beobachteter
+  Ist-Zustand zu `spec.exportMode`.
+
+### Conditions
+
+* Datentyp: Array<Condition> (Standard-Kubernetes `metav1.Condition`)
+* Inhalt: Conditions bilden den maschinenlesbaren Zustand des Dogus ab. Jede Condition besitzt
+  einen `type`, einen `status` (`True`/`False`/`Unknown`), einen `reason` sowie optional eine
+  `message` und einen `lastTransitionTime`. In `v3beta1` werden folgende Condition-Typen verwendet:
+    - `ready` - `True`, sobald für das Dogu gerade kein asynchroner Vorgang mehr läuft.
+      `reason` bei `False`: `Installing`, `Upgrading`, `ResizingPVC`, `ChangingExportMode`,
+      `Starting`, `Stopping`, `Deleting`.
+    - `healthy` - `True`, wenn die vom Dogu bereitgestellten Workloads laufen und einsatzbereit
+      sind. `reason` bei `False`: `Stopped`, `WorkloadsNotReady`.
+    - `stopped` - spiegelt wider, ob alle Workloads des Dogus tatsächlich gestoppt sind.
+      `reason`: `NotStopped`, `PartiallyStopped`.
+    - `pauseReconciliation` - spiegelt `spec.pauseReconciliation` wider.
+      `reason`: `ReconciliationEnabled`, `ReconciliationPaused`.
+    - `valid` - `False`, wenn die Dogu-CR aus fachlicher Sicht nicht verarbeitet werden kann
+      (unabhängig von der reinen Schema-Gültigkeit). `reason`: `SchemaInvalid`,
+      `UnsupportedField`, `VolumeShrink`, `StorageClassImmutable`, `NoUpgradePath`,
+      `ExportModeOnInstall`.
+    - `chartAvailable` - `False`, wenn das für `doguApiVersion: v3` benötigte Helm-Chart nicht
+      geladen werden kann. `reason`: `ChartNotFound`, `DownloadFailed`, `Unauthorized`.
+    - `updatePending` - `True`, wenn eine Änderung an der Dogu-CR vorliegt, die aktuell nicht
+      angewendet wird (z. B. weil das Dogu gestoppt ist oder die Reconciliation pausiert ist).
+      `reason`: `Stopped`, `PauseReconciliation`.
+    - `schemaValidationSkipped` - spiegelt `spec.skipSchemaValidation` wider.
+      `reason`: `SchemaValidationEnabled`, `SchemaValidationDisabled`.
+
+  Die Conditions `ready`, `healthy` und `pauseReconciliation` existierten bereits in `v2` (dort
+  teils mit anderen `reason`-Werten); alle übrigen sind neu in `v3beta1`. `kubectl get dogu` zeigt
+  `ready`, `healthy`, `stopped` und `pauseReconciliation` als eigene Spalten an.
+
+### VolumeStatus
+
+* Datentyp: Array<VolumeStatus>
+* Inhalt: VolumeStatus enthält für jeden vom Dogu verwendeten PersistentVolumeClaim den
+  beobachteten Zustand.
+* Beispiel:
+
+```
+volumeStatus:
+  - claimName: usermgt-data
+    size: 2Gi
+    desiredSize: 2Gi
+    state: ready
+```
+
+#### ClaimName
+
+* Datentyp: string
+* Inhalt: Name des PersistentVolumeClaims.
+
+#### Size
+
+* Datentyp: string (Quantity)
+* Inhalt: Aktuell tatsächliche Größe des Volumes.
+
+#### DesiredSize
+
+* Datentyp: string (Quantity)
+* Inhalt: Von `spec` gewünschte Zielgröße des Volumes.
+
+#### State
+
+* Datentyp: Enum <ready>
+* Inhalt: Zustand des Volumes. Aktuell existiert nur der Wert `ready`; weitere Zustände (z. B. für
+  eine laufende Größenänderung) sind für zukünftige Versionen vorgesehen.
+
+#### MountedBy
+
+* Datentyp: Array<Object>
+* Inhalt: Referenzen auf die Kubernetes-Objekte (z. B. Pods), die das Volume aktuell mounten.
+
+### Veraltete Felder
+
+Die folgenden Felder existieren weiterhin aus Kompatibilitätsgründen zu `v2`, sind jedoch als
+`deprecated` markiert und sollen in einer zukünftigen Hauptversion entfernt werden. Sie sind
+inhaltlich identisch zu ihren Pendants in [Dogu format](dogu_format_de.md) (`v2`) und werden durch
+die oben beschriebenen Felder bzw. Conditions abgelöst:
+
+* `status` (string) - alter, textueller Gesamtstatus des Dogus. Abgelöst durch die
+  `ready`-Condition. Mögliche Werte: `""` (nicht installiert), `installing`, `upgrading`,
+  `deleting`, `installed`, `resizing PVC`, `starting`, `stopping`, `changing export-mode`,
+  `change data mounts`.
+* `requeueTime` - Wartezeit bis zum nächsten Requeue eines laufenden asynchronen Vorgangs.
+* `requeuePhase` - aktuelle Phase eines laufenden asynchronen Vorgangs.
+* `health` - alter Gesundheitsstatus des Dogus (`""`, `available`, `unavailable`, `unknown`).
+  Abgelöst durch die `healthy`-Condition.
+* `dataVolumeSize` - alte Größenangabe des Datenvolumes. Abgelöst durch `volumeStatus`.

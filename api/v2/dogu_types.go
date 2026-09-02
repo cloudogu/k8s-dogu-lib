@@ -2,7 +2,6 @@ package v2
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"slices"
@@ -10,6 +9,7 @@ import (
 
 	cescommons "github.com/cloudogu/ces-commons-lib/dogu"
 	"github.com/cloudogu/cesapp-lib/core"
+	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -21,16 +21,13 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// This embed provides the crd for other applications. They can import this package and use the yaml file
-// for the CRD in e.g. integration tests. Otherwise, this file would not be present in the golang vendor directory.
-// The file gets refreshed by copying from controller-gen by the "crd-helm-generate/crd-copy-for-go-embedding" make target.
-//
-//go:embed k8s.cloudogu.com_dogus.yaml
-var _ embed.FS
-
 // interface constraints
 var _ conditions.Getter = &Dogu{}
 var _ conditions.Setter = &Dogu{}
+
+const (
+	onlyV2SupportedFmt = "%s is only supported for v2 dogus"
+)
 
 const (
 	// DefaultVolumeSize is the default size of a new dogu volume if no volume size is specified in the dogu resource.
@@ -219,6 +216,8 @@ const (
 	ConditionPauseReconciliation = "pauseReconciliation"
 )
 
+// +genclient
+// +kubebuilder:storageversion
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Spec-Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu"
@@ -237,6 +236,18 @@ type Dogu struct {
 
 	Spec   DoguSpec   `json:"spec,omitempty"`
 	Status DoguStatus `json:"status,omitempty"`
+}
+
+func (d *Dogu) IsV2() bool {
+	if d == nil || d.Annotations == nil {
+		return true
+	}
+
+	if doguApiVersion, found := d.Annotations[doguApiVersionAnnotationKey]; found {
+		return v3beta1.DoguApiVersion(doguApiVersion) == v3beta1.DoguApiVersionV2
+	}
+
+	return true
 }
 
 func (d *Dogu) GetConditions() []metav1.Condition {
@@ -263,18 +274,27 @@ func (d *Dogu) GetSimpleNameVersion() (cescommons.SimpleNameVersion, error) {
 }
 
 // GetDataVolumeName returns the data volume name for the dogu resource for volumes with backup
-func (d *Dogu) GetDataVolumeName() string {
-	return d.Name + "-data"
+func (d *Dogu) GetDataVolumeName() (string, error) {
+	if !d.IsV2() {
+		return "", fmt.Errorf(onlyV2SupportedFmt, "GetDataVolumeName")
+	}
+	return d.Name + "-data", nil
 }
 
 // GetEphemeralDataVolumeName returns the data volume name for the dogu resource for volumes without backup
-func (d *Dogu) GetEphemeralDataVolumeName() string {
-	return d.Name + "-ephemeral"
+func (d *Dogu) GetEphemeralDataVolumeName() (string, error) {
+	if !d.IsV2() {
+		return "", fmt.Errorf(onlyV2SupportedFmt, "GetEphemeralDataVolumeName")
+	}
+	return d.Name + "-ephemeral", nil
 }
 
 // GetPrivateKeySecretName returns the name of the dogus secret resource.
-func (d *Dogu) GetPrivateKeySecretName() string {
-	return d.Name + "-private"
+func (d *Dogu) GetPrivateKeySecretName() (string, error) {
+	if !d.IsV2() {
+		return "", fmt.Errorf(onlyV2SupportedFmt, "GetPrivateKeySecretName")
+	}
+	return d.Name + "-private", nil
 }
 
 // GetObjectKey returns the object key with the actual name and namespace from the dogu resource
@@ -288,6 +308,7 @@ func (d *Dogu) GetObjectKey() client.ObjectKey {
 // GetDevelopmentDoguMapKey returns the object key for the custom dogu descriptor with the actual name and namespace
 // from the dogu resource.
 func (d *Dogu) GetDevelopmentDoguMapKey() client.ObjectKey {
+	// TODO This could still be valid for v3
 	return client.ObjectKey{
 		Namespace: d.Namespace,
 		Name:      d.Name + "-descriptor",
@@ -295,19 +316,27 @@ func (d *Dogu) GetDevelopmentDoguMapKey() client.ObjectKey {
 }
 
 // GetSecretObjectKey returns the object key for the config map containing values that should be encrypted for the dogu
-func (d *Dogu) GetSecretObjectKey() client.ObjectKey {
+func (d *Dogu) GetSecretObjectKey() (client.ObjectKey, error) {
+	if !d.IsV2() {
+		return client.ObjectKey{}, fmt.Errorf(onlyV2SupportedFmt, "GetSecretObjectKey")
+	}
 	return client.ObjectKey{
 		Namespace: d.Namespace,
 		Name:      d.Name + "-secrets",
-	}
+	}, nil
 }
 
 // GetPrivateKeyObjectKey returns the object key for the secret containing the private key for the dogu.
-func (d *Dogu) GetPrivateKeyObjectKey() client.ObjectKey {
-	return client.ObjectKey{
-		Name:      d.GetPrivateKeySecretName(),
-		Namespace: d.Namespace,
+func (d *Dogu) GetPrivateKeyObjectKey() (client.ObjectKey, error) {
+	secretName, err := d.GetPrivateKeySecretName()
+	if err != nil {
+		return client.ObjectKey{}, err
 	}
+
+	return client.ObjectKey{
+		Name:      secretName,
+		Namespace: d.Namespace,
+	}, nil
 }
 
 // GetObjectMeta return the object meta with the actual name and namespace from the dogu resource
@@ -352,12 +381,18 @@ func (d *Dogu) GetDoguNameLabel() CesMatchingLabels {
 
 // GetPod returns a pod for this dogu. An error is returned if either no pod or more than one pod is found.
 func (d *Dogu) GetPod(ctx context.Context, cli client.Client) (*corev1.Pod, error) {
+	if !d.IsV2() {
+		return nil, fmt.Errorf(onlyV2SupportedFmt, "GetPod")
+	}
 	labels := d.GetPodLabels()
 	return GetPodForLabels(ctx, cli, labels)
 }
 
 // GetDataPVC returns the data pvc for this dogu.
 func (d *Dogu) GetDataPVC(ctx context.Context, cli client.Client) (*corev1.PersistentVolumeClaim, error) {
+	if !d.IsV2() {
+		return nil, fmt.Errorf(onlyV2SupportedFmt, "GetDataPVC")
+	}
 	pvc := &corev1.PersistentVolumeClaim{}
 	err := cli.Get(ctx, d.GetObjectKey(), pvc)
 	if err != nil {
@@ -369,6 +404,9 @@ func (d *Dogu) GetDataPVC(ctx context.Context, cli client.Client) (*corev1.Persi
 
 // GetDeployment returns the deployment for this dogu.
 func (d *Dogu) GetDeployment(ctx context.Context, cli client.Client) (*appsv1.Deployment, error) {
+	if !d.IsV2() {
+		return nil, fmt.Errorf(onlyV2SupportedFmt, "GetDeployment")
+	}
 	deploy := &appsv1.Deployment{}
 	err := cli.Get(ctx, d.GetObjectKey(), deploy)
 	if err != nil {
@@ -380,6 +418,9 @@ func (d *Dogu) GetDeployment(ctx context.Context, cli client.Client) (*appsv1.De
 
 // GetMinDataVolumeSize returns the dataVolumeSize of the dogu. If no size is set the default size will be returned.
 func (d *Dogu) GetMinDataVolumeSize() (resource.Quantity, error) {
+	if !d.IsV2() {
+		return resource.Quantity{}, fmt.Errorf(onlyV2SupportedFmt, "GetMinDataVolumeSize")
+	}
 	doguTargetDataVolumeSize := resource.MustParse(DefaultVolumeSize)
 	if !d.Spec.Resources.MinDataVolumeSize.IsZero() {
 		doguTargetDataVolumeSize = d.Spec.Resources.MinDataVolumeSize
@@ -399,7 +440,12 @@ func (d *Dogu) GetMinDataVolumeSize() (resource.Quantity, error) {
 // GetPrivateKeySecret returns the private key secret for this dogu.
 func (d *Dogu) GetPrivateKeySecret(ctx context.Context, cli client.Client) (*corev1.Secret, error) {
 	secret := &corev1.Secret{}
-	err := cli.Get(ctx, d.GetPrivateKeyObjectKey(), secret)
+	key, err := d.GetPrivateKeyObjectKey()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cli.Get(ctx, key, secret)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get private key secret for dogu %s: %w", d.Name, err)
 	}
@@ -409,6 +455,9 @@ func (d *Dogu) GetPrivateKeySecret(ctx context.Context, cli client.Client) (*cor
 
 // ValidateSecurity checks the dogu's Security section for configuration errors.
 func (d *Dogu) ValidateSecurity() error {
+	if !d.IsV2() {
+		return fmt.Errorf(onlyV2SupportedFmt, "ValidateSecurity")
+	}
 	var errs []error
 	for _, value := range d.Spec.Security.Capabilities.Add {
 		if value == core.All {
@@ -469,8 +518,7 @@ func (ddm *DevelopmentDoguMap) DeleteFromCluster(ctx context.Context, client cli
 
 // ToConfigMap returns the development dogu map as config map pointer.
 func (ddm *DevelopmentDoguMap) ToConfigMap() *corev1.ConfigMap {
-	configMap := corev1.ConfigMap(*ddm)
-	return &configMap
+	return new(corev1.ConfigMap(*ddm))
 }
 
 // CesMatchingLabels provides a convenient way to handle multiple labels for resource selection.

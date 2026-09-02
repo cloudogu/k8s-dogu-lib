@@ -1,7 +1,6 @@
 /*
 This file was generated with "make generate-deepcopy".
 */
-
 package v2
 
 import (
@@ -50,6 +49,7 @@ const (
 	RestartStatusPhaseFailedStart   RestartStatusPhase = "start failed"
 )
 
+// +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName="dr"

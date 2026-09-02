@@ -1,5 +1,8 @@
 # Dogu format
 
+> A `v3beta1` version of the Dogu-CR is available as a beta preview, see
+> [Dogu format (v3beta1)](dogu_format_v3beta1_en.md).
+
 The Dogu-CR can be used to install Cloudogu-Dogus in a Kubernetes cluster with the dogu operator.
 Various settings can be made that are evaluated in addition to dogu.json and the dogu configuration.
 
