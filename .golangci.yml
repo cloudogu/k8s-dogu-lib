@@ -1,0 +1,9 @@
+version: "2"
+linters:
+  exclusions:
+    paths:
+      - 'api/v2/.*_conversion\.go$'
+    rules:
+      - linters:
+          - staticcheck
+        text: "SA1019:"

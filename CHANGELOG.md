@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- [#21] Add `v3beta1` API version for the Dogu CRD with hub-and-spoke conversion to/from `v2`
+
+### Changed
+- [#21] Use `v2` as the storage version of the Dogu CRD
+- [#21] Regenerate the client set with `client-gen` (replaces the handwritten clients)
+  - **Attention**: This change produces syntax errors in clients and is a breaking change because this structure of the clientset changed.
+  - To get the v2 DoguInterface use: `doguClientSet.DoguV2().Dogus(<namespace>)` 
 
 ## [v2.13.0] - 2026-03-25
 - [#16] Mark additionalIngressAnnotations as deprecated  
