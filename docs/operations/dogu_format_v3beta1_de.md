@@ -462,3 +462,154 @@ upgradeConfig:
 * Datentyp: boolean
 * Inhalt: SkipSchemaValidation gibt an, ob die Schema-Validierung des Dogus übersprungen werden soll.
 * Beispiel: `"skipSchemaValidation": true`
+
+## Status
+
+Der `status`-Block einer `v3beta1`-Dogu-CR wird ausschließlich vom Dogu-Operator geschrieben und
+spiegelt den vom Operator beobachteten Ist-Zustand des Dogus wider.
+
+### Beispiel
+
+```yaml
+status:
+  installedVersion: 1.20.0-5
+  appVersion: 4.2.1
+  stopped: false
+  exportMode: false
+  startedAt: "2026-08-01T10:00:00Z"
+  conditions:
+    - type: ready
+      status: "True"
+    - type: healthy
+      status: "True"
+    - type: stopped
+      status: "False"
+      reason: NotStopped
+    - type: pauseReconciliation
+      status: "False"
+      reason: ReconciliationEnabled
+  volumeStatus:
+    - claimName: usermgt-data
+      size: 2Gi
+      desiredSize: 2Gi
+      state: ready
+```
+
+### InstalledVersion
+
+* Datentyp: string
+* Inhalt: Die aktuell installierte Version des Dogu-Charts (z. B. `1.20.0-5`).
+* Beispiel: `"installedVersion": "1.20.0-5"`
+
+### AppVersion
+
+* Datentyp: string
+* Inhalt: Die Version der im Dogu enthaltenen Anwendung (z. B. `4.2.1`). Im Unterschied zu
+  `installedVersion`, die die Version des Dogu-Charts angibt.
+* Beispiel: `"appVersion": "4.2.1"`
+
+### StartedAt
+
+* Datentyp: Zeitstempel
+* Inhalt: Zeitpunkt des letzten (Neu-)Starts des Dogus.
+
+### Stopped
+
+* Datentyp: boolean
+* Inhalt: Gibt den beobachteten Ist-Zustand zu `spec.stopped` an. Kann während eines laufenden
+  Stopp- oder Start-Vorgangs kurzzeitig vom `spec`-Feld abweichen.
+
+### ExportMode
+
+* Datentyp: boolean
+* Inhalt: Gibt an, ob der Exportmodus des Dogus aktuell tatsächlich aktiv ist. Beobachteter
+  Ist-Zustand zu `spec.exportMode`.
+
+### Conditions
+
+* Datentyp: Array<Condition> (Standard-Kubernetes `metav1.Condition`)
+* Inhalt: Conditions bilden den maschinenlesbaren Zustand des Dogus ab. Jede Condition besitzt
+  einen `type`, einen `status` (`True`/`False`/`Unknown`), einen `reason` sowie optional eine
+  `message` und einen `lastTransitionTime`. In `v3beta1` werden folgende Condition-Typen verwendet:
+    - `ready` - `True`, sobald für das Dogu gerade kein asynchroner Vorgang mehr läuft.
+      `reason` bei `False`: `Installing`, `Upgrading`, `ResizingPVC`, `ChangingExportMode`,
+      `Starting`, `Stopping`, `Deleting`.
+    - `healthy` - `True`, wenn die vom Dogu bereitgestellten Workloads laufen und einsatzbereit
+      sind. `reason` bei `False`: `Stopped`, `WorkloadsNotReady`.
+    - `stopped` - spiegelt wider, ob alle Workloads des Dogus tatsächlich gestoppt sind.
+      `reason`: `NotStopped`, `PartiallyStopped`.
+    - `pauseReconciliation` - spiegelt `spec.pauseReconciliation` wider.
+      `reason`: `ReconciliationEnabled`, `ReconciliationPaused`.
+    - `valid` - `False`, wenn die Dogu-CR aus fachlicher Sicht nicht verarbeitet werden kann
+      (unabhängig von der reinen Schema-Gültigkeit). `reason`: `SchemaInvalid`,
+      `UnsupportedField`, `VolumeShrink`, `StorageClassImmutable`, `NoUpgradePath`,
+      `ExportModeOnInstall`.
+    - `chartAvailable` - `False`, wenn das für `doguApiVersion: v3` benötigte Helm-Chart nicht
+      geladen werden kann. `reason`: `ChartNotFound`, `DownloadFailed`, `Unauthorized`.
+    - `updatePending` - `True`, wenn eine Änderung an der Dogu-CR vorliegt, die aktuell nicht
+      angewendet wird (z. B. weil das Dogu gestoppt ist oder die Reconciliation pausiert ist).
+      `reason`: `Stopped`, `PauseReconciliation`.
+    - `schemaValidationSkipped` - spiegelt `spec.skipSchemaValidation` wider.
+      `reason`: `SchemaValidationEnabled`, `SchemaValidationDisabled`.
+
+  Die Conditions `ready`, `healthy` und `pauseReconciliation` existierten bereits in `v2` (dort
+  teils mit anderen `reason`-Werten); alle übrigen sind neu in `v3beta1`. `kubectl get dogu` zeigt
+  `ready`, `healthy`, `stopped` und `pauseReconciliation` als eigene Spalten an.
+
+### VolumeStatus
+
+* Datentyp: Array<VolumeStatus>
+* Inhalt: VolumeStatus enthält für jeden vom Dogu verwendeten PersistentVolumeClaim den
+  beobachteten Zustand.
+* Beispiel:
+
+```
+volumeStatus:
+  - claimName: usermgt-data
+    size: 2Gi
+    desiredSize: 2Gi
+    state: ready
+```
+
+#### ClaimName
+
+* Datentyp: string
+* Inhalt: Name des PersistentVolumeClaims.
+
+#### Size
+
+* Datentyp: string (Quantity)
+* Inhalt: Aktuell tatsächliche Größe des Volumes.
+
+#### DesiredSize
+
+* Datentyp: string (Quantity)
+* Inhalt: Von `spec` gewünschte Zielgröße des Volumes.
+
+#### State
+
+* Datentyp: Enum <ready>
+* Inhalt: Zustand des Volumes. Aktuell existiert nur der Wert `ready`; weitere Zustände (z. B. für
+  eine laufende Größenänderung) sind für zukünftige Versionen vorgesehen.
+
+#### MountedBy
+
+* Datentyp: Array<Object>
+* Inhalt: Referenzen auf die Kubernetes-Objekte (z. B. Pods), die das Volume aktuell mounten.
+
+### Veraltete Felder
+
+Die folgenden Felder existieren weiterhin aus Kompatibilitätsgründen zu `v2`, sind jedoch als
+`deprecated` markiert und sollen in einer zukünftigen Hauptversion entfernt werden. Sie sind
+inhaltlich identisch zu ihren Pendants in [Dogu format](dogu_format_de.md) (`v2`) und werden durch
+die oben beschriebenen Felder bzw. Conditions abgelöst:
+
+* `status` (string) - alter, textueller Gesamtstatus des Dogus. Abgelöst durch die
+  `ready`-Condition. Mögliche Werte: `""` (nicht installiert), `installing`, `upgrading`,
+  `deleting`, `installed`, `resizing PVC`, `starting`, `stopping`, `changing export-mode`,
+  `change data mounts`.
+* `requeueTime` - Wartezeit bis zum nächsten Requeue eines laufenden asynchronen Vorgangs.
+* `requeuePhase` - aktuelle Phase eines laufenden asynchronen Vorgangs.
+* `health` - alter Gesundheitsstatus des Dogus (`""`, `available`, `unavailable`, `unknown`).
+  Abgelöst durch die `healthy`-Condition.
+* `dataVolumeSize` - alte Größenangabe des Datenvolumes. Abgelöst durch `volumeStatus`.
