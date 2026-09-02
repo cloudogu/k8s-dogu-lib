@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
+	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/resource"

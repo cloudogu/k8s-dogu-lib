@@ -11,7 +11,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/cloudogu/cesapp-lib/core"
-	v3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
+	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

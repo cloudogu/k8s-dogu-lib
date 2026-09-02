@@ -5,8 +5,8 @@ package v2
 import (
 	context "context"
 
-	apiv2 "github.com/cloudogu/k8s-dogu-lib/v2/api/v2"
-	scheme "github.com/cloudogu/k8s-dogu-lib/v2/client/scheme"
+	apiv2 "github.com/cloudogu/k8s-dogu-lib/v3/api/v2"
+	scheme "github.com/cloudogu/k8s-dogu-lib/v3/client/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

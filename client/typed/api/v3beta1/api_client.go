@@ -5,8 +5,8 @@ package v3beta1
 import (
 	http "net/http"
 
-	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
-	scheme "github.com/cloudogu/k8s-dogu-lib/v2/client/scheme"
+	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
+	scheme "github.com/cloudogu/k8s-dogu-lib/v3/client/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

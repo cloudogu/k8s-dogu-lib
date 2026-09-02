@@ -3,7 +3,7 @@
 package fake
 
 import (
-	v3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v3beta1"
+	v3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v3beta1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

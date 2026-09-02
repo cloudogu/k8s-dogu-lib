@@ -5,7 +5,7 @@ package v2
 import (
 	"context"
 
-	apiv2 "github.com/cloudogu/k8s-dogu-lib/v2/api/v2"
+	apiv2 "github.com/cloudogu/k8s-dogu-lib/v3/api/v2"
 	"github.com/cloudogu/retry-lib/retry"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

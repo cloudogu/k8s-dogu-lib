@@ -3,8 +3,8 @@
 package fake
 
 import (
-	doguv2 "github.com/cloudogu/k8s-dogu-lib/v2/api/v2"
-	doguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
+	doguv2 "github.com/cloudogu/k8s-dogu-lib/v3/api/v2"
+	doguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

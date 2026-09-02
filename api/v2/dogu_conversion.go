@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
+	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )

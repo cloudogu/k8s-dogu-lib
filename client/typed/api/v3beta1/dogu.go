@@ -5,8 +5,8 @@ package v3beta1
 import (
 	context "context"
 
-	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/api/v3beta1"
-	scheme "github.com/cloudogu/k8s-dogu-lib/v2/client/scheme"
+	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
+	scheme "github.com/cloudogu/k8s-dogu-lib/v3/client/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

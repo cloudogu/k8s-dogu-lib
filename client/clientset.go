@@ -6,8 +6,8 @@ import (
 	fmt "fmt"
 	http "net/http"
 
-	doguv2 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v2"
-	doguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v3beta1"
+	doguv2 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v2"
+	doguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v3beta1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

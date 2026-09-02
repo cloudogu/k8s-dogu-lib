@@ -3,11 +3,11 @@
 package fake
 
 import (
-	clientset "github.com/cloudogu/k8s-dogu-lib/v2/client"
-	doguv2 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v2"
-	fakedoguv2 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v2/fake"
-	doguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v3beta1"
-	fakedoguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v2/client/typed/api/v3beta1/fake"
+	clientset "github.com/cloudogu/k8s-dogu-lib/v3/client"
+	doguv2 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v2"
+	fakedoguv2 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v2/fake"
+	doguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v3beta1"
+	fakedoguv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v3beta1/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
