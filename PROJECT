@@ -15,7 +15,7 @@ resources:
   domain: cloudogu.com
   group: k8s
   kind: Dogu
-  path: "github.com/cloudogu/k8s-dogu-lib/v3/api/v2
+  path: github.com/cloudogu/k8s-dogu-lib/v3/api/v2
   version: v2
 - api:
     crdVersion: v2
@@ -24,7 +24,7 @@ resources:
   domain: cloudogu.com
   group: k8s
   kind: Dogu
-  path: "github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1
+  path: github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1
   version: v3beta1
   webhooks:
     conversion: true
@@ -36,6 +36,6 @@ resources:
   domain: cloudogu.com
   group: k8s
   kind: DoguRestart
-  path: "github.com/cloudogu/k8s-dogu-lib/v3/api/v2
+  path: github.com/cloudogu/k8s-dogu-lib/v3/api/v2
   version: v2
 version: "3"
