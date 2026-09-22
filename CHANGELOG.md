@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.1.0] - 2026-09-22
+### Changed
+- [#23] Use UpperCamelCase for status reasons
+- [#23] Use `k8s.cloudogu.com/` for dogu name and version labels
+
 ## [v3.0.0] - 2026-09-02
 ### Added
 - [#21] Add `v3beta1` API version for the Dogu CRD with hub-and-spoke conversion to/from `v2`

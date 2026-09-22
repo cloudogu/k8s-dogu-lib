@@ -24,10 +24,10 @@ var _ conditions.Setter = &Dogu{}
 //
 //goland:noinspection GoUnusedConst
 const (
-	// DoguLabelName is used to select a dogu pod by name.
-	DoguLabelName = "dogu.name"
+	// DoguLabelName is used to select a dogu resources by name.
+	DoguLabelName = "k8s.cloudogu.com/dogu.name"
 	// DoguLabelVersion is used to select a dogu pod by version.
-	DoguLabelVersion = "dogu.version"
+	DoguLabelVersion = "k8s.cloudogu.com/dogu.version"
 )
 
 // DoguApiVersion tells the operator's reconciler which internal deployment routine to
@@ -261,15 +261,15 @@ type DoguStatus struct {
 //goland:noinspection GoUnusedConst
 const (
 	DoguStatusNotInstalled       = ""
-	DoguStatusInstalling         = "installing"
-	DoguStatusUpgrading          = "upgrading"
-	DoguStatusDeleting           = "deleting"
-	DoguStatusInstalled          = "installed"
-	DoguStatusPVCResizing        = "resizing PVC"
-	DoguStatusStarting           = "starting"
-	DoguStatusStopping           = "stopping"
-	DoguStatusChangingExportMode = "changing export-mode"
-	DoguStatusChangingDataMounts = "change data mounts"
+	DoguStatusInstalling         = "Installing"
+	DoguStatusUpgrading          = "Upgrading"
+	DoguStatusDeleting           = "Deleting"
+	DoguStatusInstalled          = "Installed"
+	DoguStatusPVCResizing        = "ResizingPVC"
+	DoguStatusStarting           = "Starting"
+	DoguStatusStopping           = "Stopping"
+	DoguStatusChangingExportMode = "ChangingExportMode"
+	DoguStatusChangingDataMounts = "ChangeDataMounts"
 )
 
 // Conditions present in v2 and v3beta1
@@ -277,22 +277,22 @@ const (
 	// ConditionReady
 	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting
 	// Reasons v2: ReconcileSuccess, ReconcileFail, HasToReconcile
-	ConditionReady = "ready"
+	ConditionReady = "Ready"
 	// ConditionHealthy
 	// Reasons v3beta1: Stopped, WorkloadsNotReady
 	// Reasons v2: StoppingOperator, Deleting, DoguIsNotHealthy, DoguIsHealthy, Upgrading
-	ConditionHealthy             = "healthy"             // Needs to be translated
-	ConditionPauseReconciliation = "pauseReconciliation" // Same condition with equal reasons
+	ConditionHealthy             = "Healthy"             // Needs to be translated
+	ConditionPauseReconciliation = "PauseReconciliation" // Same condition with equal reasons
 )
 
 // New conditions
 const (
-	ConditionStopped                 = "stopped"
-	ConditionValid                   = "valid"
-	ConditionChartAvailable          = "chartAvailable"
-	ConditionUpdatePending           = "updatePending"
-	ConditionSchemaValidationSkipped = "schemaValidationSkipped"
-	ConditionExportModeActive        = "exportModeActive"
+	ConditionStopped                 = "Stopped"
+	ConditionValid                   = "Valid"
+	ConditionChartAvailable          = "ChartAvailable"
+	ConditionUpdatePending           = "UpdatePending"
+	ConditionSchemaValidationSkipped = "SchemaValidationSkipped"
+	ConditionExportModeActive        = "ExportModeActive"
 )
 
 // Reasons for the v3beta1 conditions.
@@ -303,6 +303,9 @@ const (
 //
 //goland:noinspection GoUnusedConst
 const (
+	// ReasonSucceeded is the positive reason for all conditions
+	ReasonSucceeded = "Succeeded"
+
 	// Reasons for ConditionReady. They name the operation that is currently in progress and
 	// therefore keeps the dogu from being ready.
 	ReasonInstalling         = "Installing"
