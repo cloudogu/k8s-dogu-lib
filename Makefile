@@ -2,7 +2,7 @@
 PROJECT_NAME=k8s-dogu-lib
 ARTIFACT_ID=k8s-dogu-operator-crd
 APPEND_CRD_SUFFIX=false
-VERSION=3.0.0
+VERSION=3.1.0
 
 IMAGE=cloudogu/${ARTIFACT_ID}:${VERSION}
 GOTAG=1.26.0
