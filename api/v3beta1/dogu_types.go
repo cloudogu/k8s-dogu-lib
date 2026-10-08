@@ -275,7 +275,7 @@ const (
 // Conditions present in v2 and v3beta1
 const (
 	// ConditionReady
-	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting
+	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed
 	// Reasons v2: ReconcileSuccess, ReconcileFail, HasToReconcile
 	ConditionReady = "Ready"
 	// ConditionHealthy
@@ -310,6 +310,8 @@ const (
 	// therefore keeps the dogu from being ready.
 	ReasonInstalling         = "Installing"
 	ReasonUpgrading          = "Upgrading"
+	ReasonInstallFailed      = "InstallFailed"
+	ReasonUpgradeFailed      = "UpgradeFailed"
 	ReasonResizingPVC        = "ResizingPVC"
 	ReasonChangingExportMode = "ChangingExportMode"
 	ReasonStarting           = "Starting"
