@@ -275,7 +275,7 @@ const (
 // Conditions present in v2 and v3beta1
 const (
 	// ConditionReady
-	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed
+	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed, DeletionFailed, DeletionStalled
 	// Reasons v2: ReconcileSuccess, ReconcileFail, HasToReconcile
 	ConditionReady = "Ready"
 	// ConditionHealthy
@@ -312,6 +312,8 @@ const (
 	ReasonUpgrading          = "Upgrading"
 	ReasonInstallFailed      = "InstallFailed"
 	ReasonUpgradeFailed      = "UpgradeFailed"
+	ReasonDeletionFailed     = "DeletionFailed"
+	ReasonDeletionStalled    = "DeletionStalled"
 	ReasonResizingPVC        = "ResizingPVC"
 	ReasonChangingExportMode = "ChangingExportMode"
 	ReasonStarting           = "Starting"
