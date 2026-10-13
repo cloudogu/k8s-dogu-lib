@@ -196,8 +196,9 @@ const (
 type VolumeStatusState string
 
 const (
-	VolumeStatusStateReady VolumeStatusState = "ready"
-	// TODO More states? Resizing?
+	VolumeStatusStateReady        VolumeStatusState = "Ready"
+	VolumeStatusStateResizing     VolumeStatusState = "Resizing"
+	VolumeStatusStateResizeFailed VolumeStatusState = "ResizeFailed"
 )
 
 type VolumeStatus struct {

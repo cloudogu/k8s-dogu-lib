@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- [#29] Add the volume states `Resizing` and `ResizeFailed` for v3beta1 dogus
+
+### Changed
+- [#29] Rename volume state `ready` to `Ready`
 
 ## [v3.1.1] - 2026-10-13
 ### Added
