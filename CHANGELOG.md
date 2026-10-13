@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [v3.1.1] - 2026-10-13
 ### Added
 - [#25] Add the reasons `InstallFailed` and `UpgradeFailed` for the `Ready` condition of v3beta1 dogus
 - [#25] Add the reasons `DeletionFailed` and `DeletionStalled` for the `Ready` condition of v3beta1 dogus
