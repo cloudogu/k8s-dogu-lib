@@ -76,8 +76,6 @@ const (
 	DoguRestartReasonSuperseded = "Superseded"
 	// DoguRestartReasonDoguNotFound is used if the dogu referenced in spec.doguName does not exist.
 	DoguRestartReasonDoguNotFound = "DoguNotFound"
-	// DoguRestartReasonDoguV3Disabled is used if the dogu is a v3 dogu but v3 support is disabled in the operator.
-	DoguRestartReasonDoguV3Disabled = "DoguV3Disabled"
 	// DoguRestartReasonDoguNotIdle is used while the dogu is installing or upgrading and the restart waits for it.
 	DoguRestartReasonDoguNotIdle = "DoguNotIdle"
 	// DoguRestartReasonPatchFailed is used if the restart annotation could not be set on a workload.
