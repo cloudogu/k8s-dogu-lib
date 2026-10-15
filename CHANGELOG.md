@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - [#29] Rename volume state `ready` to `Ready`
+- [#29] Omit an unset `size` and `desiredSize` from the volume status
 
 ## [v3.1.1] - 2026-10-13
 ### Added

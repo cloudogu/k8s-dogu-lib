@@ -203,8 +203,8 @@ const (
 
 type VolumeStatus struct {
 	ClaimName   string            `json:"claimName"`
-	Size        resource.Quantity `json:"size,omitempty"`
-	DesiredSize resource.Quantity `json:"desiredSize,omitempty"`
+	Size        resource.Quantity `json:"size,omitempty,omitzero"`
+	DesiredSize resource.Quantity `json:"desiredSize,omitempty,omitzero"`
 	State       VolumeStatusState `json:"state,omitempty"`
 	// +patchMergeKey=name
 	// +patchStrategy=merge
