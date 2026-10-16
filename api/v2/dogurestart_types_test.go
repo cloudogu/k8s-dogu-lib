@@ -34,11 +34,13 @@ func TestDoguRestart_SetConditions(t *testing.T) {
 
 		// when
 		sut.SetConditions(conditions)
+		sut.Status.Phase = RestartStatusPhaseStarting
 
 		// then
 		assert.Equal(t, conditions, sut.Status.Conditions)
-		assert.Equal(t, RestartStatusPhaseNew, sut.Status.Phase)
+		assert.Equal(t, RestartStatusPhaseStarting, sut.Status.Phase)
 	})
+
 	t.Run("should work with meta.SetStatusCondition", func(t *testing.T) {
 		// given
 		sut := &DoguRestart{}
@@ -52,5 +54,6 @@ func TestDoguRestart_SetConditions(t *testing.T) {
 		cond := meta.FindStatusCondition(sut.GetConditions(), DoguRestartConditionReady)
 		require.NotNil(t, cond)
 		assert.Equal(t, DoguRestartReasonDoguNotFound, cond.Reason)
+		assert.Equal(t, cond.Status, metav1.ConditionFalse)
 	})
 }

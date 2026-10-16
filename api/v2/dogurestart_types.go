@@ -92,8 +92,8 @@ const (
 // +kubebuilder:resource:shortName="dr"
 // +kubebuilder:printcolumn:name="Dogu",type="string",JSONPath=".spec.doguName",description="The name of the dogu"
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="The current phase of the dogu restart"
-// +kubebuilder:printcolumn:name="Restarted",type="string",JSONPath=".status.conditions[?(@.type=='Restarted')].status",description="Whether the restart is applied to all workloads"
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status",description="Whether all workloads are rolled out after the restart"
+// +kubebuilder:printcolumn:name="Restarted",type="string",JSONPath=".status.conditions[?(@.type=='Restarted')].status",description="Whether the restart is applied to all workloads"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the resource"
 
 // DoguRestart is the Schema for the dogurestarts API
