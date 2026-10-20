@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - [#27] Add `status.conditions` to `DoguRestart` with the conditions `Restarted` and `Ready` for restarts of v3 dogus
+- [#27] Add `IsOperationInProgress` to v3beta1 to tell whether an operation is currently in progress
 
 ## [v3.1.1] - 2026-10-13
 ### Added
