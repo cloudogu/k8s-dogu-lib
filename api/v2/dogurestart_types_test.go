@@ -27,6 +27,7 @@ func TestDoguRestart_SetConditions(t *testing.T) {
 	t.Run("should set conditions in status without touching the phase", func(t *testing.T) {
 		// given
 		sut := &DoguRestart{}
+		sut.Status.Phase = RestartStatusPhaseStarting
 		conditions := []metav1.Condition{
 			{Type: DoguRestartConditionRestarted, Status: metav1.ConditionTrue, Reason: DoguRestartReasonSucceeded},
 			{Type: DoguRestartConditionReady, Status: metav1.ConditionFalse, Reason: DoguRestartReasonRolloutInProgress},
@@ -34,7 +35,6 @@ func TestDoguRestart_SetConditions(t *testing.T) {
 
 		// when
 		sut.SetConditions(conditions)
-		sut.Status.Phase = RestartStatusPhaseStarting
 
 		// then
 		assert.Equal(t, conditions, sut.Status.Conditions)
