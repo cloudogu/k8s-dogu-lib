@@ -305,6 +305,21 @@ func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstA
 		delete(dstAnnotations, statusVolumesAnnotationKey)
 	}
 
+	// Map overlapping conditions and use the correct types
+	for _, condition := range s.Conditions {
+		switch condition.Type {
+		case ConditionHealthy:
+			condition.Type = v3beta1.ConditionHealthy
+			continue
+		case ConditionPauseReconciliation:
+			condition.Type = v3beta1.ConditionPauseReconciliation
+			continue
+		case ConditionReady:
+			condition.Type = v3beta1.ConditionReady
+			continue
+		}
+	}
+
 	return status, nil
 }
 
@@ -339,6 +354,21 @@ func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]strin
 			return DoguStatus{}, fmt.Errorf("failed to marshal volume status: %w", err)
 		}
 		annotations[statusVolumesAnnotationKey] = string(marshal)
+	}
+
+	// Map overlapping conditions and use the correct types
+	for _, condition := range s.Conditions {
+		switch condition.Type {
+		case v3beta1.ConditionHealthy:
+			condition.Type = ConditionHealthy
+			continue
+		case v3beta1.ConditionPauseReconciliation:
+			condition.Type = ConditionPauseReconciliation
+			continue
+		case v3beta1.ConditionReady:
+			condition.Type = ConditionReady
+			continue
+		}
 	}
 
 	return status, nil
