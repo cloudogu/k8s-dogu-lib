@@ -4,19 +4,20 @@ package fake
 
 import (
 	v2 "github.com/cloudogu/k8s-dogu-lib/v3/api/v2"
-	apiv2 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v2"
+	apiv2 "github.com/cloudogu/k8s-dogu-lib/v3/applyconfiguration/api/v2"
+	typedapiv2 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v2"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeDoguRestarts implements DoguRestartInterface
 type fakeDoguRestarts struct {
-	*gentype.FakeClientWithList[*v2.DoguRestart, *v2.DoguRestartList]
+	*gentype.FakeClientWithListAndApply[*v2.DoguRestart, *v2.DoguRestartList, *apiv2.DoguRestartApplyConfiguration]
 	Fake *FakeDoguV2
 }
 
-func newFakeDoguRestarts(fake *FakeDoguV2, namespace string) apiv2.DoguRestartInterface {
+func newFakeDoguRestarts(fake *FakeDoguV2, namespace string) typedapiv2.DoguRestartInterface {
 	return &fakeDoguRestarts{
-		gentype.NewFakeClientWithList[*v2.DoguRestart, *v2.DoguRestartList](
+		gentype.NewFakeClientWithListAndApply[*v2.DoguRestart, *v2.DoguRestartList, *apiv2.DoguRestartApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v2.SchemeGroupVersion.WithResource("dogurestarts"),
