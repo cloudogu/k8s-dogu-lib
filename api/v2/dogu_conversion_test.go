@@ -79,6 +79,20 @@ func newFullV2TestDogu() *Dogu {
 					Message:            "fine",
 					LastTransitionTime: metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
 				},
+				{
+					Type:               ConditionReady,
+					Status:             metav1.ConditionTrue,
+					Reason:             "Ok",
+					Message:            "fine",
+					LastTransitionTime: metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
+				},
+				{
+					Type:               ConditionPauseReconciliation,
+					Status:             metav1.ConditionFalse,
+					Reason:             "Ok",
+					Message:            "fine",
+					LastTransitionTime: metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
+				},
 			},
 		},
 	}
