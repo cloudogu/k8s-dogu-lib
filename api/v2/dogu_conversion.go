@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
@@ -289,7 +290,6 @@ func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstA
 		Stopped:          s.Stopped,
 		ExportMode:       s.ExportMode,
 		DataVolumeSize:   clonePtr(s.DataVolumeSize),
-		Conditions:       slices.Clone(s.Conditions),
 	}
 
 	if appVersion, foundAppVersion := srcAnnotations[statusAppVersionAnnotationKey]; foundAppVersion {
@@ -305,19 +305,19 @@ func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstA
 		delete(dstAnnotations, statusVolumesAnnotationKey)
 	}
 
-	// Map overlapping conditions and use the correct types
-	for _, condition := range s.Conditions {
-		switch condition.Type {
+	status.Conditions = make([]metav1.Condition, 0, len(s.Conditions))
+	for _, cond := range s.Conditions {
+		c := cond.DeepCopy()
+		switch cond.Type {
 		case ConditionHealthy:
-			condition.Type = v3beta1.ConditionHealthy
-			continue
+			c.Type = v3beta1.ConditionHealthy
 		case ConditionPauseReconciliation:
-			condition.Type = v3beta1.ConditionPauseReconciliation
-			continue
+			c.Type = v3beta1.ConditionPauseReconciliation
 		case ConditionReady:
-			condition.Type = v3beta1.ConditionReady
-			continue
+			c.Type = v3beta1.ConditionReady
 		}
+
+		status.Conditions = append(status.Conditions, *c)
 	}
 
 	return status, nil
@@ -356,19 +356,19 @@ func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]strin
 		annotations[statusVolumesAnnotationKey] = string(marshal)
 	}
 
-	// Map overlapping conditions and use the correct types
-	for _, condition := range s.Conditions {
-		switch condition.Type {
+	status.Conditions = make([]metav1.Condition, 0, len(s.Conditions))
+	for _, cond := range s.Conditions {
+		c := cond.DeepCopy()
+		switch cond.Type {
 		case v3beta1.ConditionHealthy:
-			condition.Type = ConditionHealthy
-			continue
+			c.Type = ConditionHealthy
 		case v3beta1.ConditionPauseReconciliation:
-			condition.Type = ConditionPauseReconciliation
-			continue
+			c.Type = ConditionPauseReconciliation
 		case v3beta1.ConditionReady:
-			condition.Type = ConditionReady
-			continue
+			c.Type = ConditionReady
 		}
+
+		status.Conditions = append(status.Conditions, *c)
 	}
 
 	return status, nil
