@@ -275,7 +275,7 @@ const (
 // Conditions present in v2 and v3beta1
 const (
 	// ConditionReady
-	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed, DeletionFailed, DeletionStalled
+	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed, DeletionFailed, DeletionStalled, MigrationPending, MigrationFailed
 	// Reasons v2: ReconcileSuccess, ReconcileFail, HasToReconcile
 	ConditionReady = "Ready"
 	// ConditionHealthy
@@ -314,6 +314,8 @@ const (
 	ReasonUpgradeFailed      = "UpgradeFailed"
 	ReasonDeletionFailed     = "DeletionFailed"
 	ReasonDeletionStalled    = "DeletionStalled"
+	ReasonMigrationPending   = "MigrationPending"
+	ReasonMigrationFailed    = "MigrationFailed"
 	ReasonResizingPVC        = "ResizingPVC"
 	ReasonChangingExportMode = "ChangingExportMode"
 	ReasonStarting           = "Starting"
@@ -368,7 +370,8 @@ func IsOperationInProgress(reason string) bool {
 		ReasonChangingExportMode,
 		ReasonStarting,
 		ReasonStopping,
-		ReasonDeleting:
+		ReasonDeleting,
+		ReasonMigrationPending:
 		return true
 	default:
 		return false
