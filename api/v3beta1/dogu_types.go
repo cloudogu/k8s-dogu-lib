@@ -306,8 +306,8 @@ const (
 	// ReasonSucceeded is the positive reason for all conditions
 	ReasonSucceeded = "Succeeded"
 
-	// Reasons for ConditionReady. They name the operation that is currently in progress and
-	// therefore keeps the dogu from being ready.
+	// Reasons for ConditionReady that name the operation that is currently in progress and
+	// therefore keeps the dogu from being ready. See IsOperationInProgress.
 	ReasonInstalling         = "Installing"
 	ReasonUpgrading          = "Upgrading"
 	ReasonInstallFailed      = "InstallFailed"
@@ -358,6 +358,22 @@ const (
 	ReasonSchemaValidationEnabled  = "SchemaValidationEnabled"
 	ReasonSchemaValidationDisabled = "SchemaValidationDisabled"
 )
+
+// IsOperationInProgress returns true if the given reason of ConditionReady names an operation that is currently in progress.
+func IsOperationInProgress(reason string) bool {
+	switch reason {
+	case ReasonInstalling,
+		ReasonUpgrading,
+		ReasonResizingPVC,
+		ReasonChangingExportMode,
+		ReasonStarting,
+		ReasonStopping,
+		ReasonDeleting:
+		return true
+	default:
+		return false
+	}
+}
 
 // +genclient
 // +kubebuilder:object:root=true
