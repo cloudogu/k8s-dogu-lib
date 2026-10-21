@@ -75,3 +75,34 @@ func TestDogu_SetConditions(t *testing.T) {
 	assert.Equal(t, "aType", dogu.Status.Conditions[0].Type)
 
 }
+
+func TestIsOperationInProgress(t *testing.T) {
+	tests := []struct {
+		reason string
+		want   bool
+	}{
+		{ReasonInstalling, true},
+		{ReasonUpgrading, true},
+		{ReasonResizingPVC, true},
+		{ReasonChangingExportMode, true},
+		{ReasonStarting, true},
+		{ReasonStopping, true},
+		{ReasonDeleting, true},
+		{ReasonMigrationPending, true},
+		{ReasonSucceeded, false},
+		{ReasonInstallFailed, false},
+		{ReasonUpgradeFailed, false},
+		{ReasonDeletionFailed, false},
+		{ReasonDeletionStalled, false},
+		{ReasonMigrationFailed, false},
+		{ReasonStopped, false},
+		{ReasonWorkloadsNotReady, false},
+		{"", false},
+		{"unknown", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.reason, func(t *testing.T) {
+			assert.Equal(t, tt.want, IsOperationInProgress(tt.reason))
+		})
+	}
+}

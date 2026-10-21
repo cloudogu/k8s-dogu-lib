@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Additional printer columns for conditions `Ready`, `Healthy` and `PauseReconciliation`
   - V2 Dogus use `lowerCamelCase` whereas V3 Dogus use `UpperCamelCase`.
+- [#33] Add the reasons `MigrationPending` and `MigrationFailed` for the `Ready` condition of v3beta1 dogus
+  - `MigrationPending` counts as an operation in progress for `IsOperationInProgress`
+
+## [v3.2.0] - 2026-10-21
+### Added
+- [#27] Add `status.conditions` to `DoguRestart` with the conditions `Restarted` and `Ready` for restarts of v3 dogus
+- [#27] Add `IsOperationInProgress` to v3beta1 to tell whether an operation is currently in progress
 
 ## [v3.1.1] - 2026-10-13
 ### Added
