@@ -369,7 +369,7 @@ const (
 // +kubebuilder:printcolumn:name="Healthy",type="string",JSONPath=".status.conditions[?(@.type=='Healthy')].status",description="Whether the resource is healthy in the current state"
 // +kubebuilder:printcolumn:name="ApiVersion",type="string",JSONPath=".spec.doguApiVersion",description="The api version for this dogu"
 // +kubebuilder:printcolumn:name="Stopped",type="string",JSONPath=".status.conditions[?(@.type=='Stopped')].status",description="Whether the dogu is stopped or not"
-// +kubebuilder:printcolumn:name="Pause Reconciliation",type="string",JSONPath=".status.conditions[?(@.type=='PauseReconciliation')].status",description="Whether the resource is ready in the current state"
+// +kubebuilder:printcolumn:name="Pause Reconciliation",type="string",JSONPath=".status.conditions[?(@.type=='PauseReconciliation')].status",description="Whether the dogu reconciliation is paused in the current state"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the resource"
 
 // Dogu is the Schema for the dogus API
