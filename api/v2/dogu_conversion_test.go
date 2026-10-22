@@ -79,6 +79,20 @@ func newFullV2TestDogu() *Dogu {
 					Message:            "fine",
 					LastTransitionTime: metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
 				},
+				{
+					Type:               ConditionReady,
+					Status:             metav1.ConditionTrue,
+					Reason:             "Ok",
+					Message:            "fine",
+					LastTransitionTime: metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
+				},
+				{
+					Type:               ConditionPauseReconciliation,
+					Status:             metav1.ConditionFalse,
+					Reason:             "Ok",
+					Message:            "fine",
+					LastTransitionTime: metav1.NewTime(time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)),
+				},
 			},
 		},
 	}
@@ -213,6 +227,19 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	assert.NotContains(t, restoredHub.Annotations, mappedValuesAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, skipSchemaValidationAnnotationKey)
 	assert.NotContains(t, restoredHub.Annotations, statusVolumesAnnotationKey)
+}
+
+func TestDogu_ConvertFrom_ConvertTo_ShouldNotConvertNilConditions(t *testing.T) {
+	hub := newV3beta1TestDogu()
+	hub.Status.Conditions = nil
+
+	var v2View Dogu
+	require.NoError(t, v2View.ConvertFrom(hub))
+
+	var restoredHub v3beta1.Dogu
+	require.NoError(t, v2View.ConvertTo(&restoredHub))
+
+	assert.Equal(t, hub.Status.Conditions, restoredHub.Status.Conditions)
 }
 
 func TestDogu_ConvertTo_DoesNotMutateSourceAnnotationsMap(t *testing.T) {

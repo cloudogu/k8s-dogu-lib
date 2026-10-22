@@ -6,6 +6,7 @@ import (
 	context "context"
 
 	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
+	applyconfigurationapiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/applyconfiguration/api/v3beta1"
 	scheme "github.com/cloudogu/k8s-dogu-lib/v3/client/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -31,18 +32,21 @@ type DoguInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*apiv3beta1.DoguList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *apiv3beta1.Dogu, err error)
+	Apply(ctx context.Context, dogu *applyconfigurationapiv3beta1.DoguApplyConfiguration, opts v1.ApplyOptions) (result *apiv3beta1.Dogu, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, dogu *applyconfigurationapiv3beta1.DoguApplyConfiguration, opts v1.ApplyOptions) (result *apiv3beta1.Dogu, err error)
 	DoguExpansion
 }
 
 // dogus implements DoguInterface
 type dogus struct {
-	*gentype.ClientWithList[*apiv3beta1.Dogu, *apiv3beta1.DoguList]
+	*gentype.ClientWithListAndApply[*apiv3beta1.Dogu, *apiv3beta1.DoguList, *applyconfigurationapiv3beta1.DoguApplyConfiguration]
 }
 
 // newDogus returns a Dogus
 func newDogus(c *DoguV3beta1Client, namespace string) *dogus {
 	return &dogus{
-		gentype.NewClientWithList[*apiv3beta1.Dogu, *apiv3beta1.DoguList](
+		gentype.NewClientWithListAndApply[*apiv3beta1.Dogu, *apiv3beta1.DoguList, *applyconfigurationapiv3beta1.DoguApplyConfiguration](
 			"dogus",
 			c.RESTClient(),
 			scheme.ParameterCodec,

@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
@@ -289,7 +290,6 @@ func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstA
 		Stopped:          s.Stopped,
 		ExportMode:       s.ExportMode,
 		DataVolumeSize:   clonePtr(s.DataVolumeSize),
-		Conditions:       slices.Clone(s.Conditions),
 	}
 
 	if appVersion, foundAppVersion := srcAnnotations[statusAppVersionAnnotationKey]; foundAppVersion {
@@ -303,6 +303,23 @@ func convertStatusToV3beta1(s DoguStatus, srcAnnotations map[string]string, dstA
 			return v3beta1.DoguStatus{}, fmt.Errorf("failed to unmarshal volume status: %w", err)
 		}
 		delete(dstAnnotations, statusVolumesAnnotationKey)
+	}
+
+	if s.Conditions != nil {
+		status.Conditions = make([]metav1.Condition, 0, len(s.Conditions))
+		for _, cond := range s.Conditions {
+			c := cond.DeepCopy()
+			switch cond.Type {
+			case ConditionHealthy:
+				c.Type = v3beta1.ConditionHealthy
+			case ConditionPauseReconciliation:
+				c.Type = v3beta1.ConditionPauseReconciliation
+			case ConditionReady:
+				c.Type = v3beta1.ConditionReady
+			}
+
+			status.Conditions = append(status.Conditions, *c)
+		}
 	}
 
 	return status, nil
@@ -322,7 +339,6 @@ func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]strin
 		// We can clone all conditions because the structure is the same and equal conditions in v2 and v3beta1 are semantically the same.
 		// The reasons change in healthy and ready condition. We have to check if other components rely on them or just on the status.
 		// If they rely on the reason, v2 clients will fail if a dogu are migrated.
-		Conditions: slices.Clone(s.Conditions),
 	}
 
 	if annotations == nil {
@@ -339,6 +355,23 @@ func convertStatusFromV3beta1(s v3beta1.DoguStatus, annotations map[string]strin
 			return DoguStatus{}, fmt.Errorf("failed to marshal volume status: %w", err)
 		}
 		annotations[statusVolumesAnnotationKey] = string(marshal)
+	}
+
+	if s.Conditions != nil {
+		status.Conditions = make([]metav1.Condition, 0, len(s.Conditions))
+		for _, cond := range s.Conditions {
+			c := cond.DeepCopy()
+			switch cond.Type {
+			case v3beta1.ConditionHealthy:
+				c.Type = ConditionHealthy
+			case v3beta1.ConditionPauseReconciliation:
+				c.Type = ConditionPauseReconciliation
+			case v3beta1.ConditionReady:
+				c.Type = ConditionReady
+			}
+
+			status.Conditions = append(status.Conditions, *c)
+		}
 	}
 
 	return status, nil
