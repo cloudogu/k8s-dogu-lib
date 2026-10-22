@@ -229,6 +229,19 @@ func TestDogu_ConvertFrom_ConvertTo_V3RoundTripIsLossless(t *testing.T) {
 	assert.NotContains(t, restoredHub.Annotations, statusVolumesAnnotationKey)
 }
 
+func TestDogu_ConvertFrom_ConvertTo_ShouldNotConvertNilConditions(t *testing.T) {
+	hub := newV3beta1TestDogu()
+	hub.Status.Conditions = nil
+
+	var v2View Dogu
+	require.NoError(t, v2View.ConvertFrom(hub))
+
+	var restoredHub v3beta1.Dogu
+	require.NoError(t, v2View.ConvertTo(&restoredHub))
+
+	assert.Equal(t, hub.Status.Conditions, restoredHub.Status.Conditions)
+}
+
 func TestDogu_ConvertTo_DoesNotMutateSourceAnnotationsMap(t *testing.T) {
 	src := &Dogu{
 		ObjectMeta: metav1.ObjectMeta{
