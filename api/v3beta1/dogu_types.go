@@ -345,6 +345,10 @@ const (
 	ReasonNotStopped       = "NotStopped"
 	ReasonPartiallyStopped = "PartiallyStopped"
 
+	// Reason for ConditionPauseReconciliation.
+	// Deprecated: As ConditionPauseReconciliation is no longer used, this reason should not be as well.
+	ReasonReconciliationEnabled = "ReconciliationEnabled"
+
 	// Reasons for ConditionValid. They name why the dogu resource cannot be processed.
 	ReasonSchemaInvalid         = "SchemaInvalid"
 	ReasonUnsupportedField      = "UnsupportedField"
@@ -357,6 +361,10 @@ const (
 	ReasonChartNotFound  = "ChartNotFound"
 	ReasonDownloadFailed = "DownloadFailed"
 	ReasonUnauthorized   = "Unauthorized"
+
+	// ReasonPauseReconciliation is an old reason for ConditionUpdatePending.
+	// Deprecated: The name is not chosen well, so it is replaced by ReasonReconciliationPaused.
+	ReasonPauseReconciliation = "PauseReconciliation"
 
 	// Reasons for ConditionSchemaValidationSkipped.
 	ReasonSchemaValidationEnabled  = "SchemaValidationEnabled"
