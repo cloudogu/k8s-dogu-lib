@@ -196,14 +196,15 @@ const (
 type VolumeStatusState string
 
 const (
-	VolumeStatusStateReady VolumeStatusState = "ready"
-	// TODO More states? Resizing?
+	VolumeStatusStateReady        VolumeStatusState = "Ready"
+	VolumeStatusStateResizing     VolumeStatusState = "Resizing"
+	VolumeStatusStateResizeFailed VolumeStatusState = "ResizeFailed"
 )
 
 type VolumeStatus struct {
 	ClaimName   string            `json:"claimName"`
-	Size        resource.Quantity `json:"size,omitempty"`
-	DesiredSize resource.Quantity `json:"desiredSize,omitempty"`
+	Size        resource.Quantity `json:"size,omitempty,omitzero"`
+	DesiredSize resource.Quantity `json:"desiredSize,omitempty,omitzero"`
 	State       VolumeStatusState `json:"state,omitempty"`
 	// +patchMergeKey=name
 	// +patchStrategy=merge
