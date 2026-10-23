@@ -276,24 +276,34 @@ const (
 // Conditions present in v2 and v3beta1
 const (
 	// ConditionReady
-	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed, DeletionFailed, DeletionStalled
+	// Reasons v3beta1: Installing, Upgrading, ResizingPVC, ChangingExportMode, Starting, Stopping, Deleting, InstallFailed, UpgradeFailed, DeletionFailed, DeletionStalled, MigrationPending, MigrationFailed
 	// Reasons v2: ReconcileSuccess, ReconcileFail, HasToReconcile
 	ConditionReady = "Ready"
 	// ConditionHealthy
 	// Reasons v3beta1: Stopped, WorkloadsNotReady
 	// Reasons v2: StoppingOperator, Deleting, DoguIsNotHealthy, DoguIsHealthy, Upgrading
-	ConditionHealthy             = "Healthy"             // Needs to be translated
+	ConditionHealthy = "Healthy" // Needs to be translated
+	// ConditionPauseReconciliation
+	// Reasons v2: ReconciliationEnabled, ReconciliationPaused
+	// Deprecated: This condition is used in v2, but will probably be replaced by ConditionSuspended,
+	// which combines different reasons
 	ConditionPauseReconciliation = "PauseReconciliation" // Same condition with equal reasons
 )
 
 // New conditions
 const (
-	ConditionStopped                 = "Stopped"
-	ConditionValid                   = "Valid"
-	ConditionChartAvailable          = "ChartAvailable"
+	ConditionStopped        = "Stopped"
+	ConditionValid          = "Valid"
+	ConditionChartAvailable = "ChartAvailable"
+	// ConditionUpdatePending is used to indicate that there are updates to the dogu, which are pending
+	// and not yet applied, because the dogu is stopped or suspended
+	// The condition defines no own reasons, but uses ReasonStopped and ReasonReconciliationPaused
 	ConditionUpdatePending           = "UpdatePending"
 	ConditionSchemaValidationSkipped = "SchemaValidationSkipped"
 	ConditionExportModeActive        = "ExportModeActive"
+	// ConditionSuspended indicates when the dogu is suspended, with any of the following reasons:
+	// ReasonDoguStopped, ReasonReconciliationPaused, ReasonPVCResizeInProgress, otherwise it uses ReasonNotSuspended
+	ConditionSuspended = "Suspended"
 )
 
 // Reasons for the v3beta1 conditions.
@@ -315,6 +325,8 @@ const (
 	ReasonUpgradeFailed      = "UpgradeFailed"
 	ReasonDeletionFailed     = "DeletionFailed"
 	ReasonDeletionStalled    = "DeletionStalled"
+	ReasonMigrationPending   = "MigrationPending"
+	ReasonMigrationFailed    = "MigrationFailed"
 	ReasonResizingPVC        = "ResizingPVC"
 	ReasonChangingExportMode = "ChangingExportMode"
 	ReasonStarting           = "Starting"
@@ -334,9 +346,9 @@ const (
 	ReasonNotStopped       = "NotStopped"
 	ReasonPartiallyStopped = "PartiallyStopped"
 
-	// Reasons for ConditionPauseReconciliation.
+	// Reason for ConditionPauseReconciliation.
+	// Deprecated: As ConditionPauseReconciliation is no longer used, this reason should not be as well.
 	ReasonReconciliationEnabled = "ReconciliationEnabled"
-	ReasonReconciliationPaused  = "ReconciliationPaused"
 
 	// Reasons for ConditionValid. They name why the dogu resource cannot be processed.
 	ReasonSchemaInvalid         = "SchemaInvalid"
@@ -351,13 +363,19 @@ const (
 	ReasonDownloadFailed = "DownloadFailed"
 	ReasonUnauthorized   = "Unauthorized"
 
-	// Reasons for ConditionUpdatePending. They name why a pending change is not applied.
-	// ReasonStopped is declared above.
+	// ReasonPauseReconciliation is an old reason for ConditionUpdatePending.
+	// Deprecated: The name is not chosen well, so it is replaced by ReasonReconciliationPaused.
 	ReasonPauseReconciliation = "PauseReconciliation"
 
 	// Reasons for ConditionSchemaValidationSkipped.
 	ReasonSchemaValidationEnabled  = "SchemaValidationEnabled"
 	ReasonSchemaValidationDisabled = "SchemaValidationDisabled"
+
+	// Reasons for ConditionSuspended.
+	ReasonNotSuspended         = "NotSuspended"
+	ReasonPVCResizeInProgress  = "PVCResizeInProgress"
+	ReasonDoguStopped          = "DoguStopped"
+	ReasonReconciliationPaused = "ReconciliationPaused"
 )
 
 // IsOperationInProgress returns true if the given reason of ConditionReady names an operation that is currently in progress.
@@ -369,7 +387,8 @@ func IsOperationInProgress(reason string) bool {
 		ReasonChangingExportMode,
 		ReasonStarting,
 		ReasonStopping,
-		ReasonDeleting:
+		ReasonDeleting,
+		ReasonMigrationPending:
 		return true
 	default:
 		return false
@@ -382,11 +401,11 @@ func IsOperationInProgress(reason string) bool {
 // +kubebuilder:printcolumn:name="Spec Version",type="string",JSONPath=".spec.version",description="The desired version of the dogu chart"
 // +kubebuilder:printcolumn:name="Installed Version",type="string",JSONPath=".status.installedVersion",description="The current version of the dogu chart"
 // +kubebuilder:printcolumn:name="App Version",type="string",JSONPath=".status.appVersion",description="The current version of the dogu application"
-// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='ready')].status",description="Whether the resource is ready in the current state"
-// +kubebuilder:printcolumn:name="Healthy",type="string",JSONPath=".status.conditions[?(@.type=='healthy')].status",description="Whether the resource is healthy in the current state"
+// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status",description="Whether the resource is ready in the current state"
+// +kubebuilder:printcolumn:name="Healthy",type="string",JSONPath=".status.conditions[?(@.type=='Healthy')].status",description="Whether the resource is healthy in the current state"
 // +kubebuilder:printcolumn:name="ApiVersion",type="string",JSONPath=".spec.doguApiVersion",description="The api version for this dogu"
-// +kubebuilder:printcolumn:name="Stopped",type="string",JSONPath=".status.conditions[?(@.type=='stopped')].status",description="Whether the dogu is stopped or not"
-// +kubebuilder:printcolumn:name="Pause Reconciliation",type="string",JSONPath=".status.conditions[?(@.type=='pauseReconciliation')].status",description="Whether the resource is ready in the current state"
+// +kubebuilder:printcolumn:name="Stopped",type="string",JSONPath=".status.conditions[?(@.type=='Stopped')].status",description="Whether the dogu is stopped or not"
+// +kubebuilder:printcolumn:name="Pause Reconciliation",type="string",JSONPath=".status.conditions[?(@.type=='PauseReconciliation')].status",description="Whether the dogu reconciliation is paused in the current state"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the resource"
 
 // Dogu is the Schema for the dogus API

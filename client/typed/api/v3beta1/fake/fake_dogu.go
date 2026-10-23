@@ -4,19 +4,20 @@ package fake
 
 import (
 	v3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/api/v3beta1"
-	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v3beta1"
+	apiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/applyconfiguration/api/v3beta1"
+	typedapiv3beta1 "github.com/cloudogu/k8s-dogu-lib/v3/client/typed/api/v3beta1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeDogus implements DoguInterface
 type fakeDogus struct {
-	*gentype.FakeClientWithList[*v3beta1.Dogu, *v3beta1.DoguList]
+	*gentype.FakeClientWithListAndApply[*v3beta1.Dogu, *v3beta1.DoguList, *apiv3beta1.DoguApplyConfiguration]
 	Fake *FakeDoguV3beta1
 }
 
-func newFakeDogus(fake *FakeDoguV3beta1, namespace string) apiv3beta1.DoguInterface {
+func newFakeDogus(fake *FakeDoguV3beta1, namespace string) typedapiv3beta1.DoguInterface {
 	return &fakeDogus{
-		gentype.NewFakeClientWithList[*v3beta1.Dogu, *v3beta1.DoguList](
+		gentype.NewFakeClientWithListAndApply[*v3beta1.Dogu, *v3beta1.DoguList, *apiv3beta1.DoguApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v3beta1.SchemeGroupVersion.WithResource("dogus"),

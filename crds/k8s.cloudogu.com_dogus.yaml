@@ -436,11 +436,11 @@ spec:
           name: App Version
           type: string
         - description: Whether the resource is ready in the current state
-          jsonPath: .status.conditions[?(@.type=='ready')].status
+          jsonPath: .status.conditions[?(@.type=='Ready')].status
           name: Ready
           type: string
         - description: Whether the resource is healthy in the current state
-          jsonPath: .status.conditions[?(@.type=='healthy')].status
+          jsonPath: .status.conditions[?(@.type=='Healthy')].status
           name: Healthy
           type: string
         - description: The api version for this dogu
@@ -448,11 +448,11 @@ spec:
           name: ApiVersion
           type: string
         - description: Whether the dogu is stopped or not
-          jsonPath: .status.conditions[?(@.type=='stopped')].status
+          jsonPath: .status.conditions[?(@.type=='Stopped')].status
           name: Stopped
           type: string
         - description: Whether the resource is ready in the current state
-          jsonPath: .status.conditions[?(@.type=='pauseReconciliation')].status
+          jsonPath: .status.conditions[?(@.type=='PauseReconciliation')].status
           name: Pause Reconciliation
           type: string
         - description: The age of the resource

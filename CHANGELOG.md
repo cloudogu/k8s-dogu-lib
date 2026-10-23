@@ -12,6 +12,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#29] Rename volume state `ready` to `Ready`
 - [#29] Omit an unset `size` and `desiredSize` from the volume status
 
+## [v3.3.0] - 2026-10-23
+### Added
+- [#38] Add `ConditionSuspended` and its reasons
+### Deprecated
+- [#38] Deprecate `ConditionPauseReconciliation`, `ReasonReconciliationEnabled` and `ReasonPauseReconciliation`; retain their existing values for compatibility
+
+## [v3.2.3] - 2026-10-22
+### Fixed
+- [#36] Do not convert nil conditions to an empty slice
+
+## [v3.2.2] - 2026-10-21
+### Added
+- [#30] Add support for Server Side Apply
+  - Generate `applyconfigurations` with `controller-gen` for `v2` and `v3beta1` api
+  - Add `Apply` methods for the client
+### Fixed
+- Additional printer columns for conditions `Ready`, `Healthy` and `PauseReconciliation`
+  - V2 Dogus use `lowerCamelCase` whereas V3 Dogus use `UpperCamelCase`.
+- [#33] Add the reasons `MigrationPending` and `MigrationFailed` for the `Ready` condition of v3beta1 dogus
+  - `MigrationPending` counts as an operation in progress for `IsOperationInProgress`
+
+## [v3.2.1] - 2026-10-21
+### Added
+- [#33] Add the reasons `MigrationPending` and `MigrationFailed` for the `Ready` condition of v3beta1 dogus
+  - `MigrationPending` counts as an operation in progress for `IsOperationInProgress`
+
 ## [v3.2.0] - 2026-10-21
 ### Added
 - [#27] Add `status.conditions` to `DoguRestart` with the conditions `Restarted` and `Ready` for restarts of v3 dogus
