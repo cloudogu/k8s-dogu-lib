@@ -120,9 +120,9 @@ func newTestConditions() []metav1.Condition {
 		newCondition(v3beta1.ConditionValid, metav1.ConditionFalse, "SchemaInvalid", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionStopped, metav1.ConditionTrue, "Stopped", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionExportModeActive, metav1.ConditionFalse, "NotActive", "...", testTime, observingGeneration),
-		newCondition(v3beta1.ConditionPauseReconciliation, metav1.ConditionTrue, "ReconiliationPaused", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionChartAvailable, metav1.ConditionFalse, "ChartNotFound", "...", testTime, observingGeneration),
 		newCondition(v3beta1.ConditionUpdatePending, metav1.ConditionTrue, "Stopped", "...", testTime, observingGeneration),
+		newCondition(v3beta1.ConditionSuspended, metav1.ConditionFalse, "NotSuspended", "...", testTime, observingGeneration),
 	}
 }
 

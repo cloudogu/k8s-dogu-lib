@@ -281,18 +281,28 @@ const (
 	// ConditionHealthy
 	// Reasons v3beta1: Stopped, WorkloadsNotReady
 	// Reasons v2: StoppingOperator, Deleting, DoguIsNotHealthy, DoguIsHealthy, Upgrading
-	ConditionHealthy             = "Healthy"             // Needs to be translated
+	ConditionHealthy = "Healthy" // Needs to be translated
+	// ConditionPauseReconciliation
+	// Reasons v2: ReconciliationEnabled, ReconciliationPaused
+	// Deprecated: This condition is used in v2, but will probably be replaced by ConditionSuspended,
+	// which combines different reasons
 	ConditionPauseReconciliation = "PauseReconciliation" // Same condition with equal reasons
 )
 
 // New conditions
 const (
-	ConditionStopped                 = "Stopped"
-	ConditionValid                   = "Valid"
-	ConditionChartAvailable          = "ChartAvailable"
+	ConditionStopped        = "Stopped"
+	ConditionValid          = "Valid"
+	ConditionChartAvailable = "ChartAvailable"
+	// ConditionUpdatePending is used to indicate that there are updates to the dogu, which are pending
+	// and not yet applied, because the dogu is stopped or suspended
+	// The condition defines no own reasons, but uses ReasonStopped and ReasonReconciliationPaused
 	ConditionUpdatePending           = "UpdatePending"
 	ConditionSchemaValidationSkipped = "SchemaValidationSkipped"
 	ConditionExportModeActive        = "ExportModeActive"
+	// ConditionSuspended indicates when the dogu is suspended, with any of the following reasons:
+	// ReasonDoguStopped, ReasonReconciliationPaused, ReasonPVCResizeInProgress, otherwise it uses ReasonNotSuspended
+	ConditionSuspended = "Suspended"
 )
 
 // Reasons for the v3beta1 conditions.
@@ -335,9 +345,9 @@ const (
 	ReasonNotStopped       = "NotStopped"
 	ReasonPartiallyStopped = "PartiallyStopped"
 
-	// Reasons for ConditionPauseReconciliation.
+	// Reason for ConditionPauseReconciliation.
+	// Deprecated: As ConditionPauseReconciliation is no longer used, this reason should not be as well.
 	ReasonReconciliationEnabled = "ReconciliationEnabled"
-	ReasonReconciliationPaused  = "ReconciliationPaused"
 
 	// Reasons for ConditionValid. They name why the dogu resource cannot be processed.
 	ReasonSchemaInvalid         = "SchemaInvalid"
@@ -352,13 +362,19 @@ const (
 	ReasonDownloadFailed = "DownloadFailed"
 	ReasonUnauthorized   = "Unauthorized"
 
-	// Reasons for ConditionUpdatePending. They name why a pending change is not applied.
-	// ReasonStopped is declared above.
+	// ReasonPauseReconciliation is an old reason for ConditionUpdatePending.
+	// Deprecated: The name is not chosen well, so it is replaced by ReasonReconciliationPaused.
 	ReasonPauseReconciliation = "PauseReconciliation"
 
 	// Reasons for ConditionSchemaValidationSkipped.
 	ReasonSchemaValidationEnabled  = "SchemaValidationEnabled"
 	ReasonSchemaValidationDisabled = "SchemaValidationDisabled"
+
+	// Reasons for ConditionSuspended.
+	ReasonNotSuspended         = "NotSuspended"
+	ReasonPVCResizeInProgress  = "PVCResizeInProgress"
+	ReasonDoguStopped          = "DoguStopped"
+	ReasonReconciliationPaused = "ReconciliationPaused"
 )
 
 // IsOperationInProgress returns true if the given reason of ConditionReady names an operation that is currently in progress.
