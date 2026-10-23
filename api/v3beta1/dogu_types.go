@@ -301,7 +301,7 @@ const (
 	ConditionSchemaValidationSkipped = "SchemaValidationSkipped"
 	ConditionExportModeActive        = "ExportModeActive"
 	// ConditionSuspended indicates when the dogu is suspended, with any of the following reasons:
-	// ReasonDoguStopped, ReasonReconciliationPaused, ReasonResizingPVC, otherwise it uses ReasonNotSuspended
+	// ReasonDoguStopped, ReasonReconciliationPaused, ReasonPVCResizeInProgress, otherwise it uses ReasonNotSuspended
 	ConditionSuspended = "Suspended"
 )
 
