@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.3.0] - 2026-10-23
+### Added
+- [#38] Add `ConditionSuspended` and its reasons
+### Deprecated
+- [#38] Deprecate `ConditionPauseReconciliation`, `ReasonReconciliationEnabled` and `ReasonPauseReconciliation`; retain their existing values for compatibility
+
 ## [v3.2.3] - 2026-10-22
 ### Fixed
 - [#36] Do not convert nil conditions to an empty slice
