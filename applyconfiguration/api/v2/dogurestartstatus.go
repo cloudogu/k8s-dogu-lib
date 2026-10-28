@@ -7,12 +7,14 @@ package v2
 
 import (
 	apiv2 "github.com/cloudogu/k8s-dogu-lib/v3/api/v2"
+	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
 // DoguRestartStatusApplyConfiguration represents a declarative configuration of the DoguRestartStatus type for use
 // with apply.
 type DoguRestartStatusApplyConfiguration struct {
-	Phase *apiv2.RestartStatusPhase `json:"phase,omitempty"`
+	Phase      *apiv2.RestartStatusPhase        `json:"phase,omitempty"`
+	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
 // DoguRestartStatusApplyConfiguration constructs a declarative configuration of the DoguRestartStatus type for use with
@@ -26,5 +28,18 @@ func DoguRestartStatus() *DoguRestartStatusApplyConfiguration {
 // If called multiple times, the Phase field is set to the value of the last call.
 func (b *DoguRestartStatusApplyConfiguration) WithPhase(value apiv2.RestartStatusPhase) *DoguRestartStatusApplyConfiguration {
 	b.Phase = &value
+	return b
+}
+
+// WithConditions adds the given value to the Conditions field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the Conditions field.
+func (b *DoguRestartStatusApplyConfiguration) WithConditions(values ...*v1.ConditionApplyConfiguration) *DoguRestartStatusApplyConfiguration {
+	for i := range values {
+		if values[i] == nil {
+			panic("nil value passed to WithConditions")
+		}
+		b.Conditions = append(b.Conditions, *values[i])
+	}
 	return b
 }

@@ -451,7 +451,7 @@ spec:
           jsonPath: .status.conditions[?(@.type=='Stopped')].status
           name: Stopped
           type: string
-        - description: Whether the resource is ready in the current state
+        - description: Whether the dogu reconciliation is paused in the current state
           jsonPath: .status.conditions[?(@.type=='PauseReconciliation')].status
           name: Pause Reconciliation
           type: string
