@@ -557,6 +557,11 @@ spec:
                     PauseReconciliation indicates whether the reconciliation loop should be running (pauseReconciliation=false) or not (pauseReconciliation=true).
                     The validation step should always be running.
                   type: boolean
+                protectSARE:
+                  description: |-
+                    ProtectSARE indicates whether the dogu ServiceAccountRequest-resources should be annotated with `helm.sh/resource-policy: keep` to not delete them on uninstallation.
+                    This is used for example during restores to avoid cleanup of ServiceAccountRequest-resources.
+                  type: boolean
                 resources:
                   description: |-
                     Deprecated: Resources is only honored by the "legacy" deployment strategy. Helm-deployed

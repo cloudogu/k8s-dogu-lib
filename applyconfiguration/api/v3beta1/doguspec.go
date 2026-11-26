@@ -29,6 +29,7 @@ type DoguSpecApplyConfiguration struct {
 	AdditionalIngressAnnotations *apiv3beta1.IngressAnnotations   `json:"additionalIngressAnnotations,omitempty"`
 	AdditionalMounts             []DataMountApplyConfiguration    `json:"additionalMounts,omitempty"`
 	SkipSchemaValidation         *bool                            `json:"skipSchemaValidation,omitempty"`
+	ProtectSARE                  *bool                            `json:"protectSARE,omitempty"`
 }
 
 // DoguSpecApplyConfiguration constructs a declarative configuration of the DoguSpec type for use with
@@ -173,5 +174,13 @@ func (b *DoguSpecApplyConfiguration) WithAdditionalMounts(values ...*DataMountAp
 // If called multiple times, the SkipSchemaValidation field is set to the value of the last call.
 func (b *DoguSpecApplyConfiguration) WithSkipSchemaValidation(value bool) *DoguSpecApplyConfiguration {
 	b.SkipSchemaValidation = &value
+	return b
+}
+
+// WithProtectSARE sets the ProtectSARE field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProtectSARE field is set to the value of the last call.
+func (b *DoguSpecApplyConfiguration) WithProtectSARE(value bool) *DoguSpecApplyConfiguration {
+	b.ProtectSARE = &value
 	return b
 }
