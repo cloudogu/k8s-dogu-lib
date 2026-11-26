@@ -28,13 +28,13 @@ spec:
           jsonPath: .status.phase
           name: Phase
           type: string
-        - description: Whether the restart is applied to all workloads
-          jsonPath: .status.conditions[?(@.type=='Restarted')].status
-          name: Restarted
-          type: string
         - description: Whether all workloads are rolled out after the restart
           jsonPath: .status.conditions[?(@.type=='Ready')].status
           name: Ready
+          type: string
+        - description: Whether the restart is applied to all workloads
+          jsonPath: .status.conditions[?(@.type=='Restarted')].status
+          name: Restarted
           type: string
         - description: The age of the resource
           jsonPath: .metadata.creationTimestamp

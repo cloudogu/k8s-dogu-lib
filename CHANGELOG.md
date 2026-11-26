@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.4.0] - 2026-11-26
+### Added
+- [#29] Add the volume states `Resizing` and `ResizeFailed` for v3beta1 dogus
+
+### Changed
+- [#29] Rename volume state `ready` to `Ready`
+- [#29] Omit an unset `size` and `desiredSize` from the volume status
+
 ## [v3.3.0] - 2026-10-23
 ### Added
 - [#38] Add `ConditionSuspended` and its reasons
