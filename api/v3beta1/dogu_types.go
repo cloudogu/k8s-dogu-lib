@@ -102,6 +102,10 @@ type DoguSpec struct {
 	AdditionalMounts []DataMount `json:"additionalMounts,omitempty" patchStrategy:"replace"` // no unique identifier, so we can't use merge
 	// SkipSchemaValidation indicates whether the schema validation should be skipped.
 	SkipSchemaValidation bool `json:"skipSchemaValidation,omitempty"`
+	// ProtectSARE indicates whether the dogu ServiceAccountRequest-resources should be annotated with `helm.sh/resource-policy: keep` to not delete them on uninstallation.
+	// This is used for example during restores to avoid cleanup of ServiceAccountRequest-resources.
+	// +optional
+	ProtectSARE bool `json:"protectSARE,omitempty"`
 }
 
 // DataSourceType defines the supported source types of additional data mounts.
